@@ -6,13 +6,13 @@ import LoginForm from "@/components/auth/LoginForm";
 export default function LoginPage() {
     return (
         <AuthBackground>
-            {/* Left — illustration */}
+            {/* Kiri — ilustrasi */}
             <AuthIllustration variant="login" />
 
-            {/* Right — form */}
+            {/* Kanan — form */}
             <AuthCard
-                title="Masuk ke LaporAja"
-                subtitle="Laporkan masalah lingkungan di sekitar kamu"
+                title="Selamat Datang Kembali 👋"
+                subtitle="Masuk dan pantau laporan lingkungan di kotamu"
             >
                 <LoginForm />
             </AuthCard>

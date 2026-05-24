@@ -7,7 +7,7 @@ import AuthInput from "@/components/common-ui/AuthInput";
 import AuthSubmitButton from "@/components/common-ui/AuthSubmitButton";
 import { AuthDivider, AuthFooterNote } from "@/components/common-ui/AuthMisc";
 import PasswordStrength from "@/components/auth/PasswordStrength";
-import { registerUser, saveToken } from "@/lib/api-auth";
+import { register } from "@/lib/api-auth"
 
 export default function RegisterForm() {
     const router = useRouter();
@@ -30,12 +30,16 @@ export default function RegisterForm() {
         setError("");
 
         try {
-            const res = await registerUser({
+            const res = await register({
                 name: form.name,
                 email: form.email,
                 password: form.password,
             });
-            saveToken(res.token);
+            // persist token to localStorage instead of importing auth helper
+            if (typeof window !== "undefined" && res?.token != null) {
+                // store token as a string for localStorage
+                localStorage.setItem("token", String(res.token));
+            }
             router.push("/user");
         } catch (err: unknown) {
             if (err instanceof Error) {

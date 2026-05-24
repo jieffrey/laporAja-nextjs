@@ -1,54 +1,64 @@
-import { apiFetch } from "@/lib/api";
+import api from "./api"
 
-// ── Types ──────────────────────────────────────────────
-export type RegisterPayload = {
-  name: string;
-  email: string;
-  password: string;
-};
 
-export type LoginPayload = {
-  email: string;
-  password: string;
-};
+// == TYPES ==
 
-export type AuthResponse = {
-  message: string;
-  token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: "user" | "admin" | "superadmin";
-    points: number;
-    avatar_url: string | null;
-  };
-};
+export type UserRole = "user" | "admin" | "superadmin"
 
-// ── API Calls ──────────────────────────────────────────
-export async function registerUser(payload: RegisterPayload): Promise<AuthResponse> {
-  return apiFetch("/auth/register", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export interface AuthUser {
+    token(token: any): unknown
+    id: number
+    name: string
+    email: string
+    role: UserRole
+    points: number
+    created_at: string
+    updated_at: string
 }
 
-export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
-  return apiFetch("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export interface LoginResponse {
+    success: boolean
+    message: string
+    data: AuthUser
+    token: string
 }
 
-// ── Token helpers ──────────────────────────────────────
-export function saveToken(token: string) {
-  localStorage.setItem("laporaja_token", token);
+export interface RegisterPayload {
+    name: string
+    email: string
+    password: string
 }
 
-export function getToken(): string | null {
-  return localStorage.getItem("laporaja_token");
+// == FETCHING FUNCTIONS ==
+
+// --------------------------------------------------------
+// REGISTER
+// Dipanggil di: halaman /auth/register (RegisterForm)
+// Tidak butuh token
+//
+// Contoh penggunaan:
+//   import { register } from "@/lib/auth.api"
+//
+//   await register({ name: "Budi", email: "budi@email.com", password: "rahasia123" })
+// --------------------------------------------------------
+export async function register(payload: RegisterPayload): Promise<AuthUser> {
+    const response = await api.post("/auth/register", payload)
+    return response.data.data
 }
 
-export function removeToken() {
-  localStorage.removeItem("laporaja_token");
+// --------------------------------------------------------
+// LOGIN
+// Dipanggil di: NextAuth credentials provider (lib/auth.ts)
+// Tidak perlu dipanggil langsung di komponen —
+// gunakan signIn("credentials", { email, password }) dari next-auth/react
+//
+// Contoh penggunaan di NextAuth authorize():
+//   import { login } from "@/lib/auth.api"
+//
+//   const data = await login("budi@email.com", "rahasia123")
+//   return { id: data.data.id, token: data.token, role: data.data.role, ... }
+// --------------------------------------------------------
+export async function login(email: string, password: string): Promise<LoginResponse> {
+    const response = await api.post("/auth/login", { email, password })
+    return response.data
 }

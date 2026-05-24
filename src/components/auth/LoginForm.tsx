@@ -6,33 +6,50 @@ import { useRouter } from "next/navigation";
 import AuthInput from "@/components/common-ui/AuthInput";
 import AuthSubmitButton from "@/components/common-ui/AuthSubmitButton";
 import { AuthDivider } from "@/components/common-ui/AuthMisc";
-import { loginUser, saveToken } from "@/lib/api-auth";
+import { login } from "@/lib/api-auth"
+import { signIn } from "next-auth/react";
 
 export default function LoginForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
+  // helper to persist token locally
+  const saveToken = (token: string) => {
     try {
-      const res = await loginUser({ email: form.email, password: form.password });
-      saveToken(res.token);
-      router.push("/user");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Terjadi kesalahan, coba lagi.");
+      if (typeof window !== "undefined") {
+        localStorage.setItem("token", token);
       }
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      // ignore storage errors
     }
   };
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState("");
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  setLoading(true);
+  setError("");
+
+  try {
+    const result = await signIn("credentials", {
+      email: form.email,
+      password: form.password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError("Email atau password salah");
+      return;
+    }
+
+    router.push("/user");
+  } catch {
+    setError("Terjadi kesalahan");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

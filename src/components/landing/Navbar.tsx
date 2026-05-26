@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Button from "@/components/common-ui/Button";
 
 const navItems = [
   { name: "Beranda", link: "#beranda" },
@@ -23,9 +22,7 @@ export default function Navbar() {
 
   const scrollTo = (id: string) => {
     const element = document.getElementById(id.replace("#", ""));
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    if (element) element.scrollIntoView({ behavior: "smooth" });
     setMobileMenuOpen(false);
   };
 
@@ -70,12 +67,21 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-2.5">
-            <Button variant="outline" size="sm">
+            {/* Masuk — ghost/outline style */}
+            <Link
+              href="/auth/login"
+              className="rounded-full border border-white/30 px-5 py-2 text-sm font-semibold text-white/90 transition-all duration-200 hover:border-white/60 hover:bg-white/10 hover:text-white"
+            >
               Masuk
-            </Button>
-            <Button variant="primary" size="sm">
+            </Link>
+
+            {/* Daftar — solid white style */}
+            <Link
+              href="/auth/register"
+              className="rounded-full bg-white px-5 py-2 text-sm font-bold text-blue-700 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)]"
+            >
               Daftar
-            </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -135,13 +141,25 @@ export default function Navbar() {
               </button>
             ))}
           </div>
+
           <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
-            <Button variant="outline" className="w-full">
+            {/* Mobile Masuk */}
+            <Link
+              href="/auth/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full rounded-2xl border border-white/25 px-5 py-3 text-center text-base font-semibold text-white/90 transition-all duration-200 hover:border-white/50 hover:bg-white/10 hover:text-white"
+            >
               Masuk
-            </Button>
-            <Button variant="primary" className="w-full text-blue-700">
+            </Link>
+
+            {/* Mobile Daftar */}
+            <Link
+              href="/auth/register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full rounded-2xl bg-white px-5 py-3 text-center text-base font-bold text-blue-700 transition-all duration-200 hover:bg-blue-50"
+            >
               Daftar
-            </Button>
+            </Link>
           </div>
         </div>
       </div>

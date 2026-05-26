@@ -1,20 +1,29 @@
-const BASE_URL = "http://localhost:5000";
+import axios from "axios"
+import { getSession } from "next-auth/react"
 
-export async function apiFetch(endpoint: string, options?: RequestInit) {
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-    headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-    },
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000",
+  headers: { "Content-Type": "application/json" },
+  timeout: 10_000,
+})
 
-    ...options,
-    });
+// auto-inject token dari session NextAuth ke setiap request
+api.interceptors.request.use(async (config) => {
+  const session = await getSession()
+  const token = (session?.user as any)?.token
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 
-    const result = await response.json();
+// normalize error message
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message = error.response?.data?.message ?? error.message ?? "Terjadi kesalahan"
+    return Promise.reject(new Error(message))
+  }
+)
 
-    if (!response.ok) {
-    throw new Error(result.message || "Something went wrong");
-    }
-
-    return result;
-}
+export default api  // ← ini yang kurang

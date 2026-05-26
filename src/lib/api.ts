@@ -10,7 +10,7 @@ const api = axios.create({
 // auto-inject token dari session NextAuth ke setiap request
 api.interceptors.request.use(async (config) => {
   const session = await getSession()
-  const token = (session?.user as any)?.token
+  const token = session?.user?.accessToken
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }

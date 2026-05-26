@@ -19,7 +19,7 @@ export const createReportSchema = z.object({
         .min(10, "Deskripsi minimal 10 karakter"),
     category: z.string()
         .min(1, "Kategori wajib dipilih"),
-    priority: z.enum(["Low", "Medium", "High"]).default("Medium"),
+    priority: z.enum(["Low", "Medium", "High"]),
     latitude:  z.string().optional(),
     longitude: z.string().optional(),
     image_before: z

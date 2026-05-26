@@ -14,6 +14,11 @@ export default withAuth(
       );
     }
 
+    // ── Superadmin only: kelola pengguna ──
+    if (pathname.startsWith("/admin/users") && role !== "superadmin") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
     // ── User biasa coba akses /admin → redirect ke /user ──
     if (pathname.startsWith("/admin") && role === "user") {
       return NextResponse.redirect(new URL("/user", req.url));

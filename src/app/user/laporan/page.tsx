@@ -1,5 +1,5 @@
 import { getReports } from "@/lib/report.api";
-import UserReportsList from "./UserReportsList";
+import UserReportsList from "../../../components/report/UserReportsList";
 
 export default async function UserReportsPage() {
   const reports = await getReports();

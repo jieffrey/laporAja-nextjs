@@ -1,4 +1,4 @@
-import MapPin from "@/components/common-ui/MapPin";
+import MapPin from "@/components/landing/MapPin";
 
 const mapPoints = [
   { x: 22, y: 35, label: "Jalan Rusak", color: "#EF4444" },

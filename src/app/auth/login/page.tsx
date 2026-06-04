@@ -1,6 +1,6 @@
-import AuthBackground from "@/components/common-ui/AuthBackground";
-import AuthCard from "@/components/common-ui/AuthCard";
-import AuthIllustration from "@/components/common-ui/AuthIllustration";
+import AuthBackground from "@/components/auth/AuthBackground";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthIllustration from "@/components/auth/AuthIllustration";
 import LoginForm from "@/components/auth/LoginForm";
 
 export default function LoginPage() {

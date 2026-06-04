@@ -1,5 +1,5 @@
-import SectionTag from "@/components/common-ui/SectionTag";
-import LeaderboardRow from "@/components/common-ui/LeaderboardRow";
+import SectionTag from "@/components/landing/SectionTag";
+import LeaderboardRow from "@/components/landing/LeaderboardRow";
 
 const leaderboard = [
   { rank: 1, name: "Budi Santoso", kelurahan: "Menteng", points: 1240, reports: 34, badge: "🏆" },

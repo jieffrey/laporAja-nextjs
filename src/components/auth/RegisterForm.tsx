@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AuthInput from "@/components/common-ui/AuthInput";
-import AuthSubmitButton from "@/components/common-ui/AuthSubmitButton";
-import { AuthDivider, AuthFooterNote } from "@/components/common-ui/AuthMisc";
+import AuthInput from "@/components/auth/AuthInput";
+import AuthSubmitButton from "@/components/auth/AuthSubmitButton";
+import { AuthDivider, AuthFooterNote } from "@/components/auth/AuthMisc";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import { register } from "@/lib/api-auth"
 

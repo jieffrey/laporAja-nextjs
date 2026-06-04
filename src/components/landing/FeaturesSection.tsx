@@ -1,5 +1,5 @@
-import SectionTag from "@/components/common-ui/SectionTag";
-import FeatureCard from "@/components/common-ui/FeatureCard";
+import SectionTag from "@/components/landing/SectionTag";
+import FeatureCard from "@/components/landing/FeatureCard";
 
 const features = [
   {

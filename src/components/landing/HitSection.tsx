@@ -1,4 +1,4 @@
-import SectionTag from "@/components/common-ui/SectionTag";
+import SectionTag from "@/components/landing/SectionTag";
 
 const steps = [
   { num: "01", icon: "📝", title: "Buat Laporan", desc: "Isi formulir laporan, pilih kategori, dan tentukan lokasi masalah di peta." },

@@ -4,9 +4,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import AuthInput from "@/components/common-ui/AuthInput"
-import AuthSubmitButton from "@/components/common-ui/AuthSubmitButton"
-import { AuthDivider } from "@/components/common-ui/AuthMisc"
+import AuthInput from "@/components/auth/AuthInput"
+import AuthSubmitButton from "@/components/auth/AuthSubmitButton"
+import { AuthDivider } from "@/components/auth/AuthMisc"
 
 export default function LoginForm() {
   const router = useRouter()

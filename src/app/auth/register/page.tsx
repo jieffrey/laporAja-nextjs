@@ -1,6 +1,6 @@
-import AuthBackground from "@/components/common-ui/AuthBackground";
-import AuthCard from "@/components/common-ui/AuthCard";
-import AuthIllustration from "@/components/common-ui/AuthIllustration";
+import AuthBackground from "@/components/auth/AuthBackground";
+import AuthCard from "@/components/auth/AuthCard";
+import AuthIllustration from "@/components/auth/AuthIllustration";
 import RegisterForm from "@/components/auth/RegisterForm";
 
 export default function RegisterPage() {

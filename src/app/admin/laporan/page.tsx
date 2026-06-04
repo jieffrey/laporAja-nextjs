@@ -5,7 +5,7 @@ export default async function AdminLaporanPage() {
   const reports = await getReports();
 
   return (
-    <div className="space-y-5 max-w-6xl">
+    <div className="space-y-5 w-full">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <div>
           <h1 className="text-[20px] font-extrabold tracking-tight text-slate-900">Kelola Laporan</h1>

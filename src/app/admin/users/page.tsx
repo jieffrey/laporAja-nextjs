@@ -64,7 +64,7 @@ useEffect(() => {
   )
 
   return (
-    <div className="space-y-5 max-w-5xl">
+    <div className="space-y-5 w-full">
       <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
         <h1 className="text-[20px] font-extrabold tracking-tight text-slate-900">Kelola Pengguna</h1>
         <p className="mt-0.5 text-[13px] text-slate-500">{users.length} pengguna terdaftar</p>

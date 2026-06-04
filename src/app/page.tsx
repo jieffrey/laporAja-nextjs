@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-import Navbar from "@/components/landing/Navbar";
+import Navbar from "@/layout/Navbar";
 import HeroSection from "@/components/landing/HeroSection";
 import StatsBar from "@/components/landing/StatsBar";
 import FeaturesSection from "@/components/landing/FeaturesSection";

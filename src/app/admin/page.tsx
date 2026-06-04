@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
   )
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 w-full">
 
       {/* Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 px-6 py-5 text-white shadow-lg">

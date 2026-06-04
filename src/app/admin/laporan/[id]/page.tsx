@@ -14,7 +14,7 @@ export default async function AdminLaporanDetailPage({ params }: Props) {
   ]);
 
   return (
-    <div className="space-y-5 max-w-4xl">
+    <div className="space-y-5 w-full">
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">

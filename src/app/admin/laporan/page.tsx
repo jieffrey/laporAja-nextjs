@@ -1,22 +1,19 @@
 import { getReports } from "@/lib/report.api";
-import AdminReportsList from "./AdminReportsList";
+import AdminReportsList from "@/components/admin/AdminReportsList";
 
-export default async function AdminReportsPage() {
+export default async function AdminLaporanPage() {
   const reports = await getReports();
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-3xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-        <h1 className="text-[20px] font-extrabold tracking-tight text-slate-900">
-          Kelola Laporan
-        </h1>
-        <p className="mt-1 text-[13px] text-slate-500">
-          Lihat semua laporan dan masuk ke detail untuk update status/priority.
-        </p>
-      </section>
+    <div className="space-y-5 max-w-6xl">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div>
+          <h1 className="text-[20px] font-extrabold tracking-tight text-slate-900">Kelola Laporan</h1>
+          <p className="mt-0.5 text-[13px] text-slate-500">{reports.length} total laporan masuk</p>
+        </div>
+      </div>
 
       <AdminReportsList reports={reports} />
     </div>
   );
 }
-

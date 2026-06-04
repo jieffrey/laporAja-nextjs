@@ -1,47 +1,28 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
-import type { UserRole } from "@/types/user";
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
 export default withAuth(
   function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const role = req.nextauth.token?.role as UserRole | undefined;
+    const token    = req.nextauth.token
+    const pathname = req.nextUrl.pathname
 
-    // ── Sudah login, akses halaman auth → redirect ke dashboard ──
-    if (pathname.startsWith("/auth") && role) {
-      return NextResponse.redirect(
-        new URL(role === "user" ? "/user" : "/admin", req.url)
-      );
+    if (pathname.startsWith("/admin") && token?.role === "user") {
+      return NextResponse.redirect(new URL("/user", req.url))
     }
 
-    // ── Superadmin only: kelola pengguna ──
-    if (pathname.startsWith("/admin/users") && role !== "superadmin") {
-      return NextResponse.redirect(new URL("/admin", req.url));
+    if (pathname.startsWith("/admin/users") && token?.role !== "superadmin") {
+      return NextResponse.redirect(new URL("/admin", req.url))
     }
 
-    // ── User biasa coba akses /admin → redirect ke /user ──
-    if (pathname.startsWith("/admin") && role === "user") {
-      return NextResponse.redirect(new URL("/user", req.url));
-    }
-
-    // ── Tidak punya role (unauthenticated) coba akses protected route ──
-    if (
-      (pathname.startsWith("/user") || pathname.startsWith("/admin")) &&
-      !role
-    ) {
-      return NextResponse.redirect(new URL("/auth/login", req.url));
-    }
-
-    return NextResponse.next();
+    return NextResponse.next()
   },
   {
     callbacks: {
-      // Jalankan middleware untuk semua route yang di-match
-      authorized: () => true,
+      authorized: ({ token }) => !!token,
     },
   }
-);
+)
 
 export const config = {
-  matcher: ["/user/:path*", "/admin/:path*", "/auth/:path*"],
-};
+  matcher: ["/user/:path*", "/admin/:path*"],
+}

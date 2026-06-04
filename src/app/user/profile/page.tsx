@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getReports } from "@/lib/report.api";
 import { USER_ROLE_LABELS } from "@/lib/constant";
-import StatCard from "@/components/common-ui/StatCard";
+import StatCard from "@/components/common-ui/StatCardNew";
 
 export default async function UserProfilePage() {
   const session = await getServerSession(authOptions);

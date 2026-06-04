@@ -28,137 +28,195 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Scoped CSS for hover effects — no DOM manipulation, no re-render loop */}
+      <style jsx>{`
+        .nav-link {
+          color: #374151;
+          transition: all 0.2s ease;
+        }
+        .nav-link:hover {
+          background: #CCFBF1;
+          color: #0F766E;
+        }
+        .nav-login {
+          border: 1.5px solid #E8E4D9;
+          color: #0F766E;
+          background: transparent;
+          transition: all 0.2s ease;
+        }
+        .nav-login:hover {
+          background: #CCFBF1;
+          border-color: #5EEAD4;
+        }
+        .nav-register {
+          background: linear-gradient(135deg, #0F766E, #14B8A6);
+          box-shadow: 0 4px 14px rgba(15, 118, 110, 0.3);
+          color: #fff;
+          transition: all 0.2s ease;
+        }
+        .nav-register:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(15, 118, 110, 0.4);
+        }
+        .mobile-link {
+          color: #374151;
+          transition: background 0.15s ease, color 0.15s ease;
+        }
+        .mobile-link:hover {
+          background: #CCFBF1;
+          color: #0F766E;
+        }
+      `}</style>
+
       <div
-        className={`fixed top-0 left-0 right-0 z-50 flex justify-center px-4 transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${
+        className={`fixed top-0 right-0 left-0 z-50 flex justify-center px-4 transition-all duration-500 ${
           scrolled ? "pt-3" : "pt-4"
         }`}
       >
         <nav
-          className={`relative flex items-center justify-between overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${
-            scrolled
-              ? "w-[min(90%,800px)] rounded-full border border-white/10 bg-blue-700/75 px-6 py-2.5 shadow-[0_8px_32px_rgba(29,78,216,0.25),inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-xl"
-              : "w-full max-w-6xl bg-transparent px-5 py-4"
-          }`}
-          style={{ height: 64 }}
+          className="relative flex items-center justify-between overflow-hidden transition-all duration-500"
+          style={{
+            height: 64,
+            ...(scrolled
+              ? {
+                  width: "min(90%, 820px)",
+                  borderRadius: "9999px",
+                  border: "1px solid #E8E4D9",
+                  background: "rgba(252, 251, 248, 0.88)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  boxShadow: "0 4px 24px rgba(15, 118, 110, 0.10)",
+                  padding: "0 24px",
+                }
+              : {
+                  width: "100%",
+                  maxWidth: "1152px",
+                  background: "transparent",
+                  padding: "0 20px",
+                }),
+          }}
         >
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white font-extrabold text-base text-blue-700 transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3">
+          <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-[10px] text-base font-extrabold text-white transition-transform duration-200 group-hover:scale-105 group-hover:-rotate-3"
+              style={{ background: "linear-gradient(135deg, #0F766E, #14B8A6)" }}
+            >
               L
             </div>
-            <span className="text-lg font-extrabold tracking-tight text-white">
+            <span className="text-lg font-extrabold tracking-tight text-gray-900">
               LaporAja
             </span>
           </Link>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden items-center gap-1 md:flex">
             {navItems.map((item) => (
               <button
                 key={item.name}
                 onClick={() => scrollTo(item.link)}
-                className="group relative rounded-full px-4 py-2 text-sm font-medium text-white/80 transition-all duration-200 hover:text-white"
+                className="nav-link rounded-full px-4 py-2 text-sm font-medium"
               >
                 {item.name}
-                <span className="absolute inset-0 rounded-full bg-white/0 transition-all duration-200 group-hover:bg-white/10" />
               </button>
             ))}
           </div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-2.5">
-            {/* Masuk — ghost/outline style */}
+          <div className="hidden items-center gap-2.5 md:flex">
             <Link
               href="/auth/login"
-              className="rounded-full border border-white/30 px-5 py-2 text-sm font-semibold text-white/90 transition-all duration-200 hover:border-white/60 hover:bg-white/10 hover:text-white"
+              className="nav-login rounded-full px-5 py-2 text-sm font-semibold"
             >
               Masuk
             </Link>
-
-            {/* Daftar — solid white style */}
             <Link
               href="/auth/register"
-              className="rounded-full bg-white px-5 py-2 text-sm font-bold text-blue-700 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(255,255,255,0.25)]"
+              className="nav-register rounded-full px-5 py-2 text-sm font-bold"
             >
-              Daftar
+              Daftar Gratis
             </Link>
           </div>
 
-          {/* Mobile Menu Toggle */}
           <button
-            className="flex md:hidden flex-col items-center justify-center gap-1.5 p-2"
+            className="flex flex-col items-center justify-center gap-1.5 p-2 md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
-            <span
-              className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-300 ${
-                mobileMenuOpen ? "translate-y-[5px] rotate-45" : ""
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-300 ${
-                mobileMenuOpen ? "opacity-0 scale-x-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 rounded-full bg-white transition-all duration-300 ${
-                mobileMenuOpen ? "-translate-y-[5px] -rotate-45" : ""
-              }`}
-            />
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="block h-0.5 w-6 rounded-full transition-all duration-300"
+                style={{
+                  background: "#0F766E",
+                  transform:
+                    i === 0 && mobileMenuOpen
+                      ? "translateY(8px) rotate(45deg)"
+                      : i === 2 && mobileMenuOpen
+                        ? "translateY(-8px) rotate(-45deg)"
+                        : "none",
+                  opacity: i === 1 && mobileMenuOpen ? 0 : 1,
+                }}
+              />
+            ))}
           </button>
         </nav>
       </div>
 
-      {/* Mobile Menu Overlay */}
       <div
-        className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
+        className={`fixed inset-0 z-40 transition-all duration-300 md:hidden ${
           mobileMenuOpen
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
         }`}
       >
         <div
-          className="absolute inset-0 bg-blue-950/60 backdrop-blur-xl transition-opacity duration-300"
+          className="absolute inset-0 backdrop-blur-sm"
+          style={{ background: "rgba(15, 118, 110, 0.08)" }}
           onClick={() => setMobileMenuOpen(false)}
         />
         <div
-          className={`absolute top-20 left-4 right-4 rounded-3xl border border-white/10 bg-blue-800/90 p-6 shadow-2xl backdrop-blur-2xl transition-all duration-300 ${
+          className={`absolute top-20 right-4 left-4 p-6 shadow-2xl transition-all duration-300 ${
             mobileMenuOpen
-              ? "translate-y-0 opacity-100 scale-100"
-              : "-translate-y-5 opacity-0 scale-95"
+              ? "translate-y-0 scale-100 opacity-100"
+              : "-translate-y-4 scale-95 opacity-0"
           }`}
+          style={{
+            borderRadius: "24px",
+            border: "1px solid #E8E4D9",
+            background: "rgba(252, 251, 248, 0.96)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+          }}
         >
-          <div className="flex flex-col gap-2">
-            {navItems.map((item, index) => (
+          <div className="flex flex-col gap-1">
+            {navItems.map((item) => (
               <button
                 key={item.name}
                 onClick={() => scrollTo(item.link)}
-                className="w-full rounded-2xl px-5 py-3.5 text-left text-base font-semibold text-white/90 transition-colors hover:bg-white/10 hover:text-white"
-                style={{
-                  transitionDelay: mobileMenuOpen ? `${index * 30}ms` : "0ms",
-                }}
+                className="mobile-link w-full rounded-2xl px-5 py-3.5 text-left text-base font-semibold"
               >
                 {item.name}
               </button>
             ))}
           </div>
 
-          <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4">
-            {/* Mobile Masuk */}
+          <div
+            className="mt-4 flex flex-col gap-3 pt-4"
+            style={{ borderTop: "1px solid #E8E4D9" }}
+          >
             <Link
               href="/auth/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full rounded-2xl border border-white/25 px-5 py-3 text-center text-base font-semibold text-white/90 transition-all duration-200 hover:border-white/50 hover:bg-white/10 hover:text-white"
+              className="w-full rounded-2xl px-5 py-3 text-center text-base font-semibold"
+              style={{ border: "1.5px solid #E8E4D9", color: "#0F766E" }}
             >
               Masuk
             </Link>
-
-            {/* Mobile Daftar */}
             <Link
               href="/auth/register"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full rounded-2xl bg-white px-5 py-3 text-center text-base font-bold text-blue-700 transition-all duration-200 hover:bg-blue-50"
+              className="w-full rounded-2xl px-5 py-3 text-center text-base font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #0F766E, #14B8A6)" }}
             >
-              Daftar
+              Daftar Gratis
             </Link>
           </div>
         </div>

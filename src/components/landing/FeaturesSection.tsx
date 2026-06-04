@@ -1,71 +1,53 @@
-import SectionTag from "@/components/landing/SectionTag";
+import { ClipboardList, ShieldCheck, MapPin, Sparkles } from "lucide-react";
 import FeatureCard from "@/components/landing/FeatureCard";
 
 const features = [
   {
-    icon: "📍",
-    title: "Geo Complaint System",
-    desc: "Laporan berbasis peta interaktif dengan latitude & longitude. Visualisasi heatmap untuk monitoring smart city.",
-    bg: "#EFF6FF",
+    icon: <ClipboardList size={24} />,
+    title: "Laporan mudah dibuat",
+    desc: "Isi formulir lengkap, pilih kategori, dan unggah foto untuk dokumentasi laporan.",
   },
   {
-    icon: "📷",
-    title: "Upload Bukti Foto",
-    desc: "Sertakan foto before & after sebagai bukti laporan. Bukti visual mempercepat penanganan masalah.",
-    bg: "#F0FDF4",
+    icon: <MapPin size={24} />,
+    title: "Peta interaktif",
+    desc: "Tandai lokasi masalah dengan tepat dan pantau status lewat dashboard peta.",
   },
   {
-    icon: "🚦",
-    title: "Tracking Status Real-Time",
-    desc: "Pantau status laporan dari pending hingga completed. Notifikasi setiap ada perubahan status.",
-    bg: "#FFFBEB",
+    icon: <ShieldCheck size={24} />,
+    title: "Transparansi proses",
+    desc: "Pantau pergerakan laporan dari pending hingga selesai secara real-time.",
   },
   {
-    icon: "🎮",
-    title: "Gamification Points",
-    desc: "Kumpulkan poin setiap laporan diterima. Masuk leaderboard Top Warga Aktif kota Anda.",
-    bg: "#F5F3FF",
-  },
-  {
-    icon: "💬",
-    title: "Diskusi & Update",
-    desc: "Ruang diskusi antara warga dan admin. Update transparan di setiap tahap penanganan laporan.",
-    bg: "#FDF2F8",
-  },
-  {
-    icon: "🔒",
-    title: "Multi-Role System",
-    desc: "Sistem role User, Admin, dan Super Admin yang terstruktur untuk pengelolaan laporan yang efisien.",
-    bg: "#F0F9FF",
+    icon: <Sparkles size={24} />,
+    title: "Komunitas aktif",
+    desc: "Bergabung dengan warga aktif yang ikut mengawasi dan melaporkan masalah kota.",
   },
 ];
 
 export default function FeaturesSection() {
   return (
-    <section id="fitur" className="bg-slate-50 px-[5%] py-25">
+    <section id="fitur" className="px-[5%] py-24 bg-white">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-15 text-center">
-          <SectionTag icon="✨" text="Fitur Unggulan" />
-          <h2 className="mb-3.5 text-[40px] font-extrabold tracking-tight text-slate-900">
-            Lebih dari Sekedar
-            <br />
-            <span className="text-blue-700">Website Pengaduan</span>
+        <div className="mb-12 max-w-2xl">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-teal-700">
+            Fitur Unggulan
+          </p>
+          <h2 className="text-[38px] font-extrabold tracking-tight text-slate-900 md:text-[44px]">
+            Solusi pengaduan cepat, transparan, dan mudah diakses.
           </h2>
-          <p className="mx-auto max-w-xl text-base leading-relaxed text-slate-500 md:text-[17px]">
-            Platform civic tech modern yang menggabungkan smart map, gamification, dan dashboard real-time.
+          <p className="mt-4 text-base leading-relaxed text-slate-500">
+            LaporAja memberikan pengalaman pelaporan yang sederhana bagi warga, admin, dan semua pihak yang ingin menciptakan lingkungan lebih baik.
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((f, i) => (
-            <div key={f.title} data-aos="fade-up" data-aos-delay={i * 100}>
-              <FeatureCard
-                icon={f.icon}
-                title={f.title}
-                desc={f.desc}
-                bg={f.bg}
-              />
-            </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {features.map((feature) => (
+            <FeatureCard
+              key={feature.title}
+              icon={feature.icon}
+              title={feature.title}
+              desc={feature.desc}
+            />
           ))}
         </div>
       </div>

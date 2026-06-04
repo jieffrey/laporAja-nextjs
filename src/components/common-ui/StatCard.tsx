@@ -1,25 +1,37 @@
+import { ReactNode } from "react";
+
 interface StatCardProps {
-  icon: string;
+  icon: ReactNode;
   value: string;
   label: string;
-  color: string;
+  trend?: string;
+  color?: string;
 }
 
-export default function StatCard({ icon, value, label, color }: StatCardProps) {
+export default function StatCard({
+  icon,
+  value,
+  label,
+  trend,
+  color = "#0F766E",
+}: StatCardProps) {
   return (
-    <div className="flex items-center gap-4">
-      <div
-        className="flex h-12 w-12 items-center justify-center rounded-[14px] text-[22px]"
-        style={{ background: `${color}18` }}
-      >
-        {icon}
-      </div>
-      <div>
-        <div className="text-[26px] font-extrabold tracking-tight text-slate-900">
-          {value}
+    <div className="flex h-full flex-col justify-between gap-3">
+      <div className="flex items-center gap-4">
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-100 text-xl"
+          style={{ color }}
+        >
+          {icon}
         </div>
-        <div className="mt-0.5 text-[13px] text-slate-500">{label}</div>
+        <div>
+          <p className="text-sm font-semibold text-slate-500">{label}</p>
+          <p className="text-3xl font-extrabold tracking-tight text-slate-900">{value}</p>
+        </div>
       </div>
+      {trend ? (
+        <p className="text-xs text-slate-500">{trend}</p>
+      ) : null}
     </div>
   );
 }

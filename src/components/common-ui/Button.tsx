@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 
 interface ButtonProps {
   children: ReactNode;
-  variant?: "primary" | "outline" | "dark";
+  variant?: "primary" | "outline" | "ghost" | "dark";
   size?: "sm" | "md" | "lg";
   className?: string;
   onClick?: () => void;
@@ -17,15 +17,36 @@ export default function Button({
   onClick,
   type = "button",
 }: ButtonProps) {
-  const baseStyles =
-    "rounded-full font-bold transition-all duration-200 active:scale-[0.98]";
+  const base =
+    "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-all duration-200 active:scale-[0.98]";
 
   const variants = {
     primary:
-      "bg-white text-blue-700 shadow-lg shadow-blue-900/20 hover:shadow-xl hover:-translate-y-px",
+      "text-white hover:-translate-y-0.5",
     outline:
-      "border border-white/30 bg-transparent text-white hover:border-white/60 hover:bg-white/10",
-    dark: "bg-slate-900 text-white hover:bg-slate-800",
+      "bg-transparent hover:bg-white/10",
+    ghost:
+      "bg-transparent hover:bg-[#CCFBF1]",
+    dark:
+      "text-white hover:opacity-90",
+  };
+
+  const variantStyles = {
+    primary: {
+      background: "linear-gradient(135deg, #0F766E, #14B8A6)",
+      boxShadow: "0 4px 14px rgba(15,118,110,0.30)",
+    },
+    outline: {
+      border: "1.5px solid rgba(255,255,255,0.40)",
+      color: "#fff",
+    },
+    ghost: {
+      border: "1.5px solid #E8E4D9",
+      color: "#0F766E",
+    },
+    dark: {
+      background: "#115E59",
+    },
   };
 
   const sizes = {
@@ -38,7 +59,8 @@ export default function Button({
     <button
       type={type}
       onClick={onClick}
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+      style={variantStyles[variant]}
     >
       {children}
     </button>

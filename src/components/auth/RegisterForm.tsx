@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 import AuthInput from "@/components/auth/AuthInput";
 import AuthSubmitButton from "@/components/auth/AuthSubmitButton";
 import { AuthDivider, AuthFooterNote } from "@/components/auth/AuthMisc";
 import PasswordStrength from "@/components/auth/PasswordStrength";
-import { register } from "@/lib/api-auth"
+import { register } from "@/lib/api-auth";
 
 export default function RegisterForm() {
     const router = useRouter();
@@ -21,7 +22,8 @@ export default function RegisterForm() {
     const [error, setError] = useState("");
 
     const passwordMatch = form.confirm !== "" && form.password === form.confirm;
-    const passwordMismatch = form.confirm !== "" && form.password !== form.confirm;
+    const passwordMismatch =
+        form.confirm !== "" && form.password !== form.confirm;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,9 +37,7 @@ export default function RegisterForm() {
                 email: form.email,
                 password: form.password,
             });
-            // persist token to localStorage instead of importing auth helper
             if (typeof window !== "undefined" && res?.token != null) {
-                // store token as a string for localStorage
                 localStorage.setItem("token", String(res.token));
             }
             router.push("/user");
@@ -80,7 +80,9 @@ export default function RegisterForm() {
                     isPassword
                     placeholder="Min. 8 karakter"
                     value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    onChange={(e) =>
+                        setForm({ ...form, password: e.target.value })
+                    }
                     required
                     minLength={8}
                     autoComplete="new-password"
@@ -101,9 +103,17 @@ export default function RegisterForm() {
             />
 
             {error && (
-                <div className="flex items-center gap-2.5 rounded-2xl border border-red-400/30 bg-red-400/10 px-4 py-2.5">
-                    <span className="text-base">⚠️</span>
-                    <p className="text-[13px] text-red-300">{error}</p>
+                <div
+                    className="flex items-center gap-2.5 rounded-2xl px-4 py-3"
+                    style={{
+                        background: "#FEE2E2",
+                        border: "1px solid #FECACA",
+                    }}
+                >
+                    <AlertCircle size={16} style={{ color: "#991B1B" }} />
+                    <p className="text-[13px] font-medium" style={{ color: "#991B1B" }}>
+                        {error}
+                    </p>
                 </div>
             )}
 
@@ -120,11 +130,12 @@ export default function RegisterForm() {
 
             <AuthDivider />
 
-            <p className="text-center text-sm text-white/60">
+            <p className="text-center text-sm" style={{ color: "#6B7280" }}>
                 Sudah punya akun?{" "}
                 <Link
                     href="/auth/login"
-                    className="font-semibold text-white hover:text-blue-200 transition-colors"
+                    className="font-bold transition-colors"
+                    style={{ color: "#0F766E" }}
                 >
                     Masuk di sini
                 </Link>

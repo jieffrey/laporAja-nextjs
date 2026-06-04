@@ -1,25 +1,66 @@
 type AuthSubmitButtonProps = {
-    loading: boolean
-    label: string
-    loadingLabel: string
-    disabled?: boolean
-}
+    loading: boolean;
+    label: string;
+    loadingLabel: string;
+    disabled?: boolean;
+};
 
-export default function AuthSubmitButton({ loading, label, loadingLabel, disabled }: AuthSubmitButtonProps) {
+export default function AuthSubmitButton({
+    loading,
+    label,
+    loadingLabel,
+    disabled,
+}: AuthSubmitButtonProps) {
     return (
-        <button
-            type="submit"
-            disabled={loading || disabled}
-            className="w-full rounded-full bg-white py-3 text-[15px] font-bold text-blue-700 shadow-lg shadow-blue-900/20 transition-all duration-200 hover:-translate-y-px hover:shadow-xl active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-            {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-700/30 border-t-blue-700" />
-                    {loadingLabel}
-                </span>
-            ) : (
-                label
-            )}
-        </button>
+        <>
+            <style jsx>{`
+                .auth-submit {
+                    background: linear-gradient(135deg, #0F766E, #14B8A6);
+                    color: #fff;
+                    box-shadow: 0 6px 20px rgba(15, 118, 110, 0.30);
+                    transition: all 0.2s ease;
+                }
+                .auth-submit:hover:not(:disabled) {
+                    transform: translateY(-1px);
+                    box-shadow: 0 10px 24px rgba(15, 118, 110, 0.40);
+                }
+                .auth-submit:active:not(:disabled) {
+                    transform: scale(0.98);
+                }
+                .auth-submit:disabled {
+                    cursor: not-allowed;
+                    opacity: 0.55;
+                    background: #9CA3AF;
+                    box-shadow: none;
+                }
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+                .spinner {
+                    animation: spin 0.8s linear infinite;
+                }
+            `}</style>
+
+            <button
+                type="submit"
+                disabled={loading || disabled}
+                className="auth-submit w-full rounded-full py-3 text-[15px] font-bold"
+            >
+                {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                        <span
+                            className="spinner h-4 w-4 rounded-full"
+                            style={{
+                                border: "2px solid rgba(255,255,255,0.30)",
+                                borderTopColor: "#fff",
+                            }}
+                        />
+                        {loadingLabel}
+                    </span>
+                ) : (
+                    label
+                )}
+            </button>
+        </>
     );
 }

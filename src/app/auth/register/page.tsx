@@ -6,9 +6,9 @@ import RegisterForm from "@/components/auth/RegisterForm";
 export default function RegisterPage() {
     return (
         <AuthBackground>
-            {/* Kiri — form (dibalik dari login) */}
+            {/* Kiri — form */}
             <AuthCard
-                title="Buat Akun Baru 🚀"
+                title="Buat Akun Baru"
                 subtitle="Bergabung dan mulai berkontribusi untuk kotamu"
             >
                 <RegisterForm />

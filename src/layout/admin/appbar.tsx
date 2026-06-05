@@ -15,6 +15,7 @@ import {
 import { USER_ROLE_LABELS } from "@/lib/constant"
 import { adminMenus, getPageTitle } from "@/hooks/AdminMenus"
 import type { UserRole } from "@/lib/constant"
+import NotificationPanel from "@/components/common-ui/NotificationPanel"
 
 const ACCENT: Record<string, { avatar: string; label: string }> = {
     user:       { avatar: "linear-gradient(135deg, #14B8A6, #5EEAD4)", label: "#0F766E" },
@@ -108,14 +109,7 @@ export default function AdminAppbar() {
 
                 {/* Right */}
                 <div className="flex items-center gap-2">
-                    <button className="icon-btn relative flex h-9 w-9 items-center justify-center rounded-xl">
-                        <RiNotification3Line size={17} />
-                        {/* Notification dot */}
-                        <span
-                            className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full"
-                            style={{ background: "#EA580C" }}
-                        />
-                    </button>
+                    <NotificationPanel/>
 
                     <span
                         className="hidden text-[13px] sm:block"

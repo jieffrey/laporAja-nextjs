@@ -1,9 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
-import { RiMapPin2Fill, RiLogoutBoxRLine, RiShieldFill } from "react-icons/ri"
+import {
+    RiMapPin2Fill,
+    RiLogoutBoxRLine,
+    RiShieldFill,
+    RiArrowLeftSLine,
+    RiArrowRightSLine,
+} from "react-icons/ri"
 import { USER_ROLE_LABELS } from "@/lib/constant"
 import { adminMenus } from "@/hooks/AdminMenus"
 import type { UserRole } from "@/lib/constant"
@@ -13,15 +20,15 @@ type Props = {
     name: string
 }
 
-// Role accent on dark teal sidebar
 const ACCENT: Record<UserRole, { dot: string; avatar: string; label: string }> = {
-    user:       { dot: "#5EEAD4", avatar: "linear-gradient(135deg, #14B8A6, #5EEAD4)", label: "#5EEAD4" },
-    admin:      { dot: "#5EEAD4", avatar: "linear-gradient(135deg, #0F766E, #14B8A6)", label: "#5EEAD4" },
-    superadmin: { dot: "#FCD34D", avatar: "linear-gradient(135deg, #F59E0B, #EA580C)", label: "#FCD34D" },
+    user:       { dot: "#14B8A6", avatar: "linear-gradient(135deg, #14B8A6, #5EEAD4)", label: "#0F766E" },
+    admin:      { dot: "#14B8A6", avatar: "linear-gradient(135deg, #0F766E, #14B8A6)", label: "#0F766E" },
+    superadmin: { dot: "#F59E0B", avatar: "linear-gradient(135deg, #F59E0B, #EA580C)", label: "#EA580C" },
 }
 
 export default function AdminSidebar({ role, name }: Props) {
     const pathname = usePathname()
+    const [collapsed, setCollapsed] = useState(false)
     const ac = ACCENT[role]
     const initials = name
         .split(" ")
@@ -30,7 +37,9 @@ export default function AdminSidebar({ role, name }: Props) {
         .slice(0, 2)
         .toUpperCase()
 
-    const visibleMenus = adminMenus.filter((m) => !m.roles || m.roles.includes(role))
+    const visibleMenus = adminMenus.filter(
+        (m) => !m.roles || m.roles.includes(role)
+    )
 
     const isActive = (href: string) => {
         if (pathname === href) return true
@@ -41,84 +50,156 @@ export default function AdminSidebar({ role, name }: Props) {
     return (
         <>
             <style jsx>{`
+                .sidebar {
+                    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                }
                 .nav-item {
-                    color: rgba(255, 255, 255, 0.65);
+                    color: #6B7280;
                     transition: all 0.18s ease;
                 }
                 .nav-item:hover {
-                    background: rgba(255, 255, 255, 0.08);
-                    color: #fff;
+                    background: #14B8A6;
+                    color: #ffffff;
                 }
-                .nav-item-active {
-                    background: rgba(255, 255, 255, 0.15);
-                    color: #fff;
+                .nav-item:hover svg {
+                    color: #ffffff;
+                }
+                .nav-active {
+                    background: #CCFBF1;
+                    color: #0F766E;
+                }
+                .nav-active:hover {
+                    background: #14B8A6;
+                    color: #ffffff;
+                }
+                .nav-active:hover svg {
+                    color: #ffffff;
                 }
                 .logout-btn {
-                    color: rgba(255, 255, 255, 0.55);
+                    color: #9CA3AF;
                     transition: all 0.18s ease;
                 }
                 .logout-btn:hover {
-                    background: rgba(254, 226, 226, 0.12);
-                    color: #FECACA;
+                    background: #FEE2E2;
+                    color: #991B1B;
+                }
+                .toggle-btn {
+                    color: #9CA3AF;
+                    background: #F8F6F0;
+                    border: 1px solid #E8E4D9;
+                    transition: all 0.18s ease;
+                }
+                .toggle-btn:hover {
+                    background: #CCFBF1;
+                    color: #0F766E;
+                    border-color: #5EEAD4;
+                }
+                .fade-label {
+                    transition: opacity 0.2s ease, width 0.2s ease;
+                    white-space: nowrap;
+                    overflow: hidden;
                 }
             `}</style>
 
             <aside
-                className="sticky top-0 hidden h-screen w-[220px] shrink-0 flex-col lg:flex"
+                className="sidebar sticky top-0 hidden h-screen flex-col lg:flex"
                 style={{
-                    background: "linear-gradient(180deg, #115E59 0%, #0F766E 100%)",
+                    width: collapsed ? 60 : 220,
+                    background: "#FCFBF8",
+                    borderRight: "1px solid #E8E4D9",
+                    flexShrink: 0,
                 }}
             >
-                {/* Logo */}
+                {/* Logo + collapse toggle */}
                 <div
-                    className="flex items-center gap-2.5 px-5 py-[18px]"
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.10)" }}
+                    className="flex items-center justify-between px-3 py-[14px]"
+                    style={{ borderBottom: "1px solid #E8E4D9" }}
                 >
-                    <div
-                        className="flex h-8 w-8 items-center justify-center rounded-xl"
-                        style={{
-                            background: "linear-gradient(135deg, #F59E0B, #EA580C)",
-                            boxShadow: "0 4px 12px rgba(245,158,11,0.30)",
-                        }}
-                    >
-                        <RiMapPin2Fill size={15} className="text-white" />
-                    </div>
-                    <div>
-                        <p className="text-[14px] font-extrabold leading-none tracking-tight text-white">
-                            LaporAja
-                        </p>
-                        <p
-                            className="mt-0.5 text-[10px] leading-none"
-                            style={{ color: "rgba(255,255,255,0.50)" }}
+                    {!collapsed ? (
+                        <Link
+                            href="/admin"
+                            className="flex items-center gap-2.5 overflow-visible"
                         >
-                            {USER_ROLE_LABELS[role]}
-                        </p>
-                    </div>
+                            <div
+                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
+                                style={{
+                                    background:
+                                        "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                    boxShadow:
+                                        "0 4px 12px rgba(15,118,110,0.25)",
+                                }}
+                            >
+                                <RiMapPin2Fill size={14} className="text-white" />
+                            </div>
+                            <span
+                                className="fade-label text-[14px] font-extrabold tracking-tight"
+                                style={{ color: "#111827" }}
+                            >
+                                LaporAja
+                            </span>
+                        </Link>
+                    ) : (
+                        <div className="h-8 w-8" />
+                    )}
+
+                    <button
+                        onClick={() => setCollapsed((v) => !v)}
+                        className="toggle-btn flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        style={{ lineHeight: 0 }}
+                    >
+                        {collapsed ? (
+                            <RiArrowRightSLine size={16} />
+                        ) : (
+                            <RiArrowLeftSLine size={16} />
+                        )}
+                    </button>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
-                    <p
-                        className="mb-2.5 px-2.5 text-[10px] font-bold uppercase tracking-widest"
-                        style={{ color: "rgba(255,255,255,0.40)" }}
-                    >
-                        Menu
-                    </p>
+                <nav
+                    className="flex-1 space-y-1 overflow-y-auto px-2 py-3"
+                >
+                    {!collapsed && (
+                        <p
+                            className="mb-2 px-2.5 text-[10px] font-bold uppercase tracking-widest"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            Menu
+                        </p>
+                    )}
                     {visibleMenus.map(({ href, label, Icon }) => {
                         const active = isActive(href)
                         return (
                             <Link
                                 key={href}
                                 href={href}
-                                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-[13px] font-medium ${
-                                    active ? "nav-item-active" : "nav-item"
+                                className={`flex items-center rounded-xl ${
+                                    active ? "nav-active" : "nav-item"
                                 }`}
+                                style={{
+                                    minHeight: 44,
+                                    gap: collapsed ? 0 : 10,
+                                    padding: collapsed ? "12px 0" : "9px 10px",
+                                    justifyContent: collapsed
+                                        ? "center"
+                                        : "flex-start",
+                                }}
+                                title={collapsed ? label : undefined}
                             >
-                                <Icon size={16} className="shrink-0" />
-                                <span className="flex-1">{label}</span>
-                                {active && (
+                                <Icon
+                                    size={collapsed ? 18 : 16}
+                                    className="flex-shrink-0"
+                                />
+                                {!collapsed && (
+                                    <span className="fade-label text-[13px] font-semibold">
+                                        {label}
+                                    </span>
+                                )}
+                                {/* Active indicator dot */}
+                                {active && !collapsed && (
                                     <span
-                                        className="h-1.5 w-1.5 rounded-full"
+                                        className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full"
                                         style={{ background: ac.dot }}
                                     />
                                 )}
@@ -127,50 +208,72 @@ export default function AdminSidebar({ role, name }: Props) {
                     })}
                 </nav>
 
-                {/* User + logout */}
+                {/* Bottom — user + logout */}
                 <div
-                    className="p-3"
-                    style={{ borderTop: "1px solid rgba(255,255,255,0.10)" }}
+                    className="px-2 pb-3 pt-2"
+                    style={{ borderTop: "1px solid #E8E4D9" }}
                 >
                     {/* Role badge */}
-                    <div
-                        className="mb-2 flex items-center gap-1.5 rounded-lg px-3 py-1.5"
-                        style={{ background: "rgba(255,255,255,0.08)" }}
-                    >
-                        <RiShieldFill size={12} style={{ color: ac.label }} />
-                        <span
-                            className="text-[11px] font-bold uppercase tracking-wider"
-                            style={{ color: ac.label }}
+                    {!collapsed && (
+                        <div
+                            className="mb-2 flex items-center gap-1.5 rounded-lg px-3 py-1.5"
+                            style={{ background: "#F8F6F0" }}
                         >
-                            {USER_ROLE_LABELS[role]}
-                        </span>
-                    </div>
+                            <RiShieldFill size={11} style={{ color: ac.label }} />
+                            <span
+                                className="text-[10px] font-bold uppercase tracking-wider"
+                                style={{ color: ac.label }}
+                            >
+                                {USER_ROLE_LABELS[role]}
+                            </span>
+                        </div>
+                    )}
 
                     {/* User row */}
-                    <div className="flex items-center gap-2.5 rounded-xl px-2.5 py-2">
+                    <div
+                        className="flex items-center rounded-xl"
+                        style={{
+                            gap: collapsed ? 0 : 8,
+                            padding: collapsed ? "8px 0" : "6px 8px",
+                            justifyContent: collapsed ? "center" : "flex-start",
+                        }}
+                    >
                         <div
-                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                            style={{ background: ac.avatar }}
+                            className="flex flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                            style={{
+                                width: collapsed ? 28 : 26,
+                                height: collapsed ? 28 : 26,
+                                background: ac.avatar,
+                            }}
+                            title={collapsed ? name : undefined}
                         >
                             {initials}
                         </div>
-                        <div className="min-w-0 flex-1">
-                            <p
-                                className="truncate text-[12px] font-semibold"
-                                style={{ color: "rgba(255,255,255,0.90)" }}
-                            >
-                                {name}
-                            </p>
-                        </div>
+                        {!collapsed && (
+                            <div className="min-w-0 flex-1">
+                                <p
+                                    className="truncate text-[12px] font-semibold"
+                                    style={{ color: "#111827" }}
+                                >
+                                    {name}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Logout */}
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="logout-btn mt-1 flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-[12px] font-medium"
+                        className="logout-btn mt-1 flex w-full items-center rounded-xl text-[12px] font-semibold"
+                        style={{
+                            gap: collapsed ? 0 : 8,
+                            padding: collapsed ? "8px 0" : "7px 8px",
+                            justifyContent: collapsed ? "center" : "flex-start",
+                        }}
+                        title={collapsed ? "Keluar" : undefined}
                     >
-                        <RiLogoutBoxRLine size={14} />
-                        Keluar
+                        <RiLogoutBoxRLine size={collapsed ? 16 : 14} />
+                        {!collapsed && <span>Keluar</span>}
                     </button>
                 </div>
             </aside>

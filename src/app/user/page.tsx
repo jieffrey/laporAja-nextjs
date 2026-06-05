@@ -1,144 +1,438 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import {
+    FileText,
+    CheckCircle2,
+    Loader,
+    Clock,
+    PlusCircle,
+    List,
+    ArrowRight,
+    Inbox,
+    Sparkles,
+    Trophy,
+    ClipboardList,
+    Flame,
+} from "lucide-react"
 import { getReports } from "@/lib/report.api"
 import type { Report } from "@/lib/report.api"
 import { POINTS_CONFIG } from "@/lib/constant"
 import StatusBadge from "@/components/common-ui/StatusBadge"
 
 export default function UserDashboardPage() {
-  const { data: session, status } = useSession()
-  const [reports, setReports] = useState<Report[]>([])
-  const [loading, setLoading] = useState(true)
+    const { data: session, status } = useSession()
+    const [reports, setReports] = useState<Report[]>([])
+    const [loading, setLoading] = useState(true)
 
-useEffect(() => {
-    if (status !== "authenticated") return
-    getReports()
-      .then(data => {
-        const userId = Number(session?.user?.id)
-        setReports(data.filter(r => r.user_id === userId))
-      })
-      .finally(() => setLoading(false))
-  }, [status, session?.user?.id])
+    useEffect(() => {
+        if (status !== "authenticated") return
+        getReports()
+            .then((data) => {
+                const userId = Number(session?.user?.id)
+                setReports(data.filter((r) => r.user_id === userId))
+            })
+            .finally(() => setLoading(false))
+    }, [status, session?.user?.id])
 
-  const name       = session?.user?.name?.split(" ")[0] ?? "Pengguna"
-  const points     = session?.user?.points ?? 0
-  const total      = reports.length
-  const resolved   = reports.filter(r => r.status === "Resolved").length
-  const inProgress = reports.filter(r => r.status === "In Progress").length
-  const pending    = reports.filter(r => r.status === "Pending").length
-  const recent     = [...reports]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5)
+    const name = session?.user?.name?.split(" ")[0] ?? "Pengguna"
+    const points = session?.user?.points ?? 0
+    const total = reports.length
+    const resolved = reports.filter((r) => r.status === "Resolved").length
+    const inProgress = reports.filter((r) => r.status === "In Progress").length
+    const pending = reports.filter((r) => r.status === "Pending").length
 
-  const STATS = [
-    { label: "Total Laporan",   value: total,      icon: "📋", color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-100"    },
-    { label: "Selesai",         value: resolved,   icon: "✅", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
-    { label: "Sedang Diproses", value: inProgress, icon: "⏳", color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-100"   },
-    { label: "Pending",         value: pending,    icon: "🕐", color: "text-slate-500",   bg: "bg-slate-50",   border: "border-slate-200"   },
-  ]
+    const recent = useMemo(
+        () =>
+            [...reports]
+                .sort(
+                    (a, b) =>
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime()
+                )
+                .slice(0, 5),
+        [reports]
+    )
 
-  return (
-    <div className="space-y-5 max-w-4xl">
+    const STATS = [
+        {
+            label: "Total Laporan",
+            value: total,
+            icon: <FileText size={16} />,
+            iconBg: "#CCFBF1",
+            iconColor: "#0F766E",
+            valueColor: "#0F766E",
+        },
+        {
+            label: "Selesai",
+            value: resolved,
+            icon: <CheckCircle2 size={16} />,
+            iconBg: "#D1FAE5",
+            iconColor: "#065F46",
+            valueColor: "#065F46",
+        },
+        {
+            label: "Diproses",
+            value: inProgress,
+            icon: <Loader size={16} />,
+            iconBg: "#FEF3C7",
+            iconColor: "#92400E",
+            valueColor: "#92400E",
+        },
+        {
+            label: "Pending",
+            value: pending,
+            icon: <Clock size={16} />,
+            iconBg: "#F1EDE2",
+            iconColor: "#5F5E5A",
+            valueColor: "#5F5E5A",
+        },
+    ]
 
-      {/* Welcome banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 px-6 py-5 shadow-lg shadow-blue-200">
-        <div className="absolute right-0 top-0 h-full w-64 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle at 70% 50%, white 1px, transparent 1px)", backgroundSize: "18px 18px" }} />
-        <div className="relative flex items-start justify-between gap-4">
-          <div>
-            <p className="text-blue-200 text-[13px] font-medium">Selamat datang kembali 👋</p>
-            <h1 className="mt-0.5 text-[22px] font-extrabold tracking-tight text-white">{name}</h1>
-            <p className="mt-1.5 text-blue-100 text-[13px] max-w-sm">
-              {total === 0
-                ? "Belum ada laporan. Yuk mulai kontribusi untuk lingkunganmu!"
-                : `Kamu sudah membuat ${total} laporan. Terus semangat! 💪`}
-            </p>
-          </div>
-          <div className="hidden sm:flex flex-shrink-0 flex-col items-center justify-center rounded-2xl bg-white/15 px-4 py-3 border border-white/20">
-            <p className="text-white font-extrabold text-[28px] leading-none">{points}</p>
-            <p className="text-blue-200 text-[11px] mt-1 font-medium">Poin Kamu</p>
-          </div>
-        </div>
-        <div className="relative mt-4 flex flex-wrap gap-2">
-          {[
-            { label: "Buat laporan", pts: `+${POINTS_CONFIG.CREATE_REPORT}` },
-            { label: "In Progress",  pts: `+${POINTS_CONFIG.IN_PROGRESS}`   },
-            { label: "Resolved",     pts: `+${POINTS_CONFIG.RESOLVED}`      },
-          ].map(p => (
-            <div key={p.label} className="flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-1">
-              <span className="text-white font-bold text-[12px]">{p.pts}</span>
-              <span className="text-blue-200 text-[11px]">{p.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+    const formatDate = (iso: string) =>
+        new Date(iso).toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {STATS.map(s => (
-          <div key={s.label} className={`rounded-2xl border ${s.border} bg-white px-4 py-4 shadow-sm`}>
-            <div className={`mb-2.5 inline-flex h-8 w-8 items-center justify-center rounded-xl ${s.bg} text-base`}>{s.icon}</div>
-            <p className={`text-[24px] font-extrabold tracking-tight ${s.color}`}>
-              {loading ? <span className="inline-block h-6 w-8 animate-pulse rounded bg-slate-200" /> : s.value}
-            </p>
-            <p className="mt-0.5 text-[11px] text-slate-400">{s.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick actions */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Link href="/user/laporan/buat" className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-200 hover:shadow-md transition-all">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl group-hover:bg-blue-100 transition-colors">⊕</div>
-          <div>
-            <p className="text-[14px] font-semibold text-slate-900">Buat Laporan Baru</p>
-            <p className="text-[12px] text-slate-400">Laporkan masalah di sekitarmu</p>
-          </div>
-          <span className="ml-auto text-slate-300 group-hover:text-blue-500 transition-colors text-lg">→</span>
-        </Link>
-        <Link href="/user/laporan" className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-blue-200 hover:shadow-md transition-all">
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-slate-50 text-xl group-hover:bg-slate-100 transition-colors">◫</div>
-          <div>
-            <p className="text-[14px] font-semibold text-slate-900">Lihat Laporan Saya</p>
-            <p className="text-[12px] text-slate-400">{total} laporan · {resolved} selesai</p>
-          </div>
-          <span className="ml-auto text-slate-300 group-hover:text-blue-500 transition-colors text-lg">→</span>
-        </Link>
-      </div>
-
-      {/* Recent */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <p className="text-[14px] font-bold text-slate-900">Laporan Terbaru</p>
-          <Link href="/user/laporan" className="text-[12px] text-blue-600 hover:underline">Lihat semua →</Link>
-        </div>
-        {loading ? (
-          <div className="flex h-32 items-center justify-center">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-          </div>
-        ) : recent.length === 0 ? (
-          <div className="py-10 text-center">
-            <p className="text-3xl mb-2">📭</p>
-            <p className="text-[13px] text-slate-400">Belum ada laporan</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-50">
-            {recent.map(r => (
-              <Link key={r.id} href={`/user/laporan/${r.id}`}
-                className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/50 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-slate-800 truncate">{r.title}</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">{r.category} · {new Date(r.created_at).toLocaleDateString("id-ID")}</p>
+    return (
+        <div className="w-full space-y-5">
+            {/* ── Welcome banner ── */}
+            <div
+                className="relative overflow-hidden rounded-2xl px-6 py-5 text-white"
+                style={{
+                    background:
+                        "linear-gradient(135deg, #0F766E 0%, #14B8A6 50%, #F59E0B 100%)",
+                    boxShadow: "0 12px 32px rgba(15,118,110,0.20)",
+                }}
+            >
+                <div
+                    className="pointer-events-none absolute right-0 top-0 h-full w-64"
+                    style={{
+                        backgroundImage:
+                            "radial-gradient(circle at 70% 50%, rgba(255,255,255,0.20) 1px, transparent 1px)",
+                        backgroundSize: "18px 18px",
+                        opacity: 0.5,
+                    }}
+                />
+                <div className="relative flex items-start justify-between gap-4">
+                    <div>
+                        <p
+                            className="flex items-center gap-1.5 text-[13px] font-semibold"
+                            style={{ color: "rgba(255,255,255,0.80)" }}
+                        >
+                            Selamat datang kembali
+                        </p>
+                        <h1 className="mt-0.5 text-[22px] font-extrabold tracking-tight">
+                            {name}
+                        </h1>
+                        <p
+                            className="mt-1.5 flex items-center gap-1.5 text-[13px]"
+                            style={{ color: "rgba(255,255,255,0.85)" }}
+                        >
+                            {total === 0 ? (
+                                "Belum ada laporan. Yuk mulai kontribusi!"
+                            ) : (
+                                <>
+                                    Kamu sudah membuat {total} laporan{" "}
+                                    <Sparkles size={14} />
+                                </>
+                            )}
+                        </p>
+                    </div>
+                    <div
+                        className="hidden flex-shrink-0 flex-col items-center justify-center rounded-2xl px-4 py-3 sm:flex"
+                        style={{
+                            background: "rgba(255,255,255,0.18)",
+                            border: "1px solid rgba(255,255,255,0.20)",
+                        }}
+                    >
+                        <div className="flex items-center gap-1">
+                            <Trophy size={16} />
+                            <p className="text-[28px] font-extrabold leading-none">
+                                {points.toLocaleString("id-ID")}
+                            </p>
+                        </div>
+                        <p
+                            className="mt-1 text-[11px] font-medium"
+                            style={{ color: "rgba(255,255,255,0.80)" }}
+                        >
+                            Poin Kamu
+                        </p>
+                    </div>
                 </div>
-                <StatusBadge status={r.status} />
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
+
+                {/* Point rules strip */}
+                <div className="relative mt-4 flex flex-wrap gap-2">
+                    {[
+                        {
+                            icon: <ClipboardList size={11} />,
+                            label: "Buat laporan",
+                            pts: `+${POINTS_CONFIG.CREATE_REPORT}`,
+                        },
+                        {
+                            icon: <Loader size={11} />,
+                            label: "In Progress",
+                            pts: `+${POINTS_CONFIG.IN_PROGRESS}`,
+                        },
+                        {
+                            icon: <Flame size={11} />,
+                            label: "Resolved",
+                            pts: `+${POINTS_CONFIG.RESOLVED}`,
+                        },
+                    ].map((p) => (
+                        <div
+                            key={p.label}
+                            className="flex items-center gap-1.5 rounded-full px-3 py-1"
+                            style={{
+                                background: "rgba(255,255,255,0.14)",
+                                border: "1px solid rgba(255,255,255,0.18)",
+                            }}
+                        >
+                            {p.icon}
+                            <span className="text-[12px] font-bold">
+                                {p.pts}
+                            </span>
+                            <span
+                                className="text-[11px]"
+                                style={{ color: "rgba(255,255,255,0.80)" }}
+                            >
+                                {p.label}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* ── Stats ── */}
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                {STATS.map((s) => (
+                    <div
+                        key={s.label}
+                        className="rounded-2xl px-4 py-4"
+                        style={{
+                            background: "#FCFBF8",
+                            border: "1px solid #E8E4D9",
+                            boxShadow:
+                                "0 1px 3px rgba(15,118,110,0.04)",
+                        }}
+                    >
+                        <div
+                            className="mb-2.5 inline-flex h-9 w-9 items-center justify-center rounded-xl"
+                            style={{
+                                background: s.iconBg,
+                                color: s.iconColor,
+                            }}
+                        >
+                            {s.icon}
+                        </div>
+                        <p
+                            className="text-[24px] font-extrabold tracking-tight"
+                            style={{ color: s.valueColor }}
+                        >
+                            {loading ? (
+                                <span className="skeleton inline-block h-6 w-8" />
+                            ) : (
+                                s.value
+                            )}
+                        </p>
+                        <p
+                            className="mt-0.5 text-[11px]"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            {s.label}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            {/* ── Quick actions ── */}
+            <div className="grid gap-3 sm:grid-cols-2">
+                <Link
+                    href="/user/laporan/buat"
+                    className="group flex items-center gap-4 rounded-2xl p-4 transition-all hover:-translate-y-0.5"
+                    style={{
+                        background: "#FCFBF8",
+                        border: "1px solid #E8E4D9",
+                        boxShadow: "0 1px 3px rgba(15,118,110,0.04)",
+                    }}
+                >
+                    <div
+                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
+                        style={{
+                            background:
+                                "linear-gradient(135deg, #0F766E, #14B8A6)",
+                            color: "#fff",
+                            boxShadow:
+                                "0 4px 12px rgba(15,118,110,0.25)",
+                        }}
+                    >
+                        <PlusCircle size={20} />
+                    </div>
+                    <div>
+                        <p
+                            className="text-[14px] font-bold"
+                            style={{ color: "#111827" }}
+                        >
+                            Buat Laporan Baru
+                        </p>
+                        <p
+                            className="text-[12px]"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            Laporkan masalah di sekitarmu
+                        </p>
+                    </div>
+                    <ArrowRight
+                        size={16}
+                        className="ml-auto flex-shrink-0 transition-transform group-hover:translate-x-1"
+                        style={{ color: "#0F766E" }}
+                    />
+                </Link>
+                <Link
+                    href="/user/laporan"
+                    className="group flex items-center gap-4 rounded-2xl p-4 transition-all hover:-translate-y-0.5"
+                    style={{
+                        background: "#FCFBF8",
+                        border: "1px solid #E8E4D9",
+                        boxShadow: "0 1px 3px rgba(15,118,110,0.04)",
+                    }}
+                >
+                    <div
+                        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl"
+                        style={{
+                            background: "#CCFBF1",
+                            color: "#0F766E",
+                        }}
+                    >
+                        <List size={20} />
+                    </div>
+                    <div>
+                        <p
+                            className="text-[14px] font-bold"
+                            style={{ color: "#111827" }}
+                        >
+                            Lihat Laporan Saya
+                        </p>
+                        <p
+                            className="text-[12px]"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            {total} laporan · {resolved} selesai
+                        </p>
+                    </div>
+                    <ArrowRight
+                        size={16}
+                        className="ml-auto flex-shrink-0 transition-transform group-hover:translate-x-1"
+                        style={{ color: "#0F766E" }}
+                    />
+                </Link>
+            </div>
+
+            {/* ── Recent reports ── */}
+            <div
+                className="overflow-hidden rounded-2xl"
+                style={{
+                    background: "#FCFBF8",
+                    border: "1px solid #E8E4D9",
+                    boxShadow: "0 1px 3px rgba(15,118,110,0.04)",
+                }}
+            >
+                <div
+                    className="flex items-center justify-between px-5 py-4"
+                    style={{ borderBottom: "1px solid #F1EDE2" }}
+                >
+                    <p
+                        className="text-[14px] font-bold"
+                        style={{ color: "#111827" }}
+                    >
+                        Laporan Terbaru
+                    </p>
+                    <Link
+                        href="/user/laporan"
+                        className="flex items-center gap-1 text-[12px] font-semibold hover:underline"
+                        style={{ color: "#0F766E" }}
+                    >
+                        Lihat semua <ArrowRight size={12} />
+                    </Link>
+                </div>
+
+                {loading ? (
+                    <div className="flex h-32 items-center justify-center">
+                        <div
+                            className="h-6 w-6 animate-spin rounded-full"
+                            style={{
+                                border: "2px solid #CCFBF1",
+                                borderTopColor: "#0F766E",
+                            }}
+                        />
+                    </div>
+                ) : recent.length === 0 ? (
+                    <div className="py-10 text-center">
+                        <div
+                            className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl"
+                            style={{
+                                background: "#CCFBF1",
+                                color: "#0F766E",
+                            }}
+                        >
+                            <Inbox size={22} />
+                        </div>
+                        <p
+                            className="text-[13px] font-semibold"
+                            style={{ color: "#374151" }}
+                        >
+                            Belum ada laporan
+                        </p>
+                        <p
+                            className="mt-1 text-[12px]"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            Mulai buat laporan pertamamu
+                        </p>
+                    </div>
+                ) : (
+                    <div>
+                        {recent.map((r, idx) => (
+                            <Link
+                                key={r.id}
+                                href={`/user/laporan/${r.id}`}
+                                className="flex items-center gap-3 px-5 py-3.5 transition-colors"
+                                style={{
+                                    borderBottom:
+                                        idx < recent.length - 1
+                                            ? "1px solid #F1EDE2"
+                                            : undefined,
+                                    background:
+                                        idx % 2 !== 0
+                                            ? "#F8F6F0"
+                                            : "#FCFBF8",
+                                }}
+                            >
+                                <div className="min-w-0 flex-1">
+                                    <p
+                                        className="truncate text-[13px] font-bold"
+                                        style={{ color: "#111827" }}
+                                    >
+                                        {r.title}
+                                    </p>
+                                    <p
+                                        className="mt-0.5 text-[11px]"
+                                        style={{ color: "#9CA3AF" }}
+                                    >
+                                        {r.category} ·{" "}
+                                        {formatDate(r.created_at)}
+                                    </p>
+                                </div>
+                                <StatusBadge status={r.status} />
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    )
 }

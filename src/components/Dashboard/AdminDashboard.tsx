@@ -36,7 +36,7 @@ export default function AdminDashboardClient({
     const name = session?.user?.name?.split(" ")[0] ?? "Admin"
 
     return (
-        <div className="max-w-5xl space-y-6">
+        <div className="space-y-6">
             <WelcomeBanner
                 name={name}
                 isSuperAdmin={isSuperAdmin}

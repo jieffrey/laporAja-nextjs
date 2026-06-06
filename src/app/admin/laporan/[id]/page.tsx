@@ -4,7 +4,8 @@ import ReportHeader from "@/components/admin/report-detail/ReportHeader"
 import ReportDescription from "@/components/admin/report-detail/ReportDescription"
 import ReportImages from "@/components/admin/report-detail/ReportImages"
 import ReportLocation from "@/components/admin/report-detail/ReportLocation"
-import ReportComments from "@/components/admin/report-detail/ReportComments"
+// import ReportComments from "@/components/admin/report-detail/ReportComments"
+import CommentSection from "@/components/comment/CommentSection"
 import AdminStatusUpdater from "@/components/admin/AdminStatusUpdater"
 
 type Props = {
@@ -37,7 +38,7 @@ export default async function AdminLaporanDetailPage({ params }: Props) {
                         longitude={report.longitude}
                     />
 
-                    <ReportComments comments={comments} />
+                    <CommentSection reportId={Number(id)} initialComments={comments} />
                 </div>
 
                 {/* Right — action panel */}

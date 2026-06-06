@@ -1,13 +1,14 @@
     import api from "./api"
 
     export interface Comment {
-        id: number
-        report_id: number
-        user_id: number
-        name: string
-        comment: string
-        created_at: string
-    }
+    id: number
+    report_id: number
+    user_id: number
+    name: string
+    role: "user" | "admin" | "superadmin"
+    comment: string
+    created_at: string
+}
 
     export async function getCommentsByReport(reportId: number): Promise<Comment[]> {
         const res = await api.get(`/comments/report/${reportId}`)

@@ -18,7 +18,6 @@ const categories = [
   { dot: "#0F766E", label: "Lingkungan",    count: "624 laporan" },
   { dot: "#F59E0B", label: "Kebersihan",    count: "538 laporan" },
   { dot: "#991B1B", label: "Keamanan",      count: "312 laporan" },
-  { dot: "#14B8A6", label: "Taman Kota",    count: "248 laporan" },
 ];
 
 export default function MapSection() {

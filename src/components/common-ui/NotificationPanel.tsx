@@ -46,36 +46,44 @@ export default function NotificationPanel() {
     const [error, setError] = useState<string | null>(null)
     const ref = useRef<HTMLDivElement>(null)
 
-    // Fetch unread count on mount (for badge before opening)
-    useEffect(() => {
-        getUnreadCount()
-            .then(setBadgeCount)
-            .catch(() => {
-                setBadgeCount(0)
-            })
+    const fetchUnreadCount = useCallback(async () => {
+        try {
+            const count = await getUnreadCount()
+            setBadgeCount(count)
+        } catch {
+            setBadgeCount(0)
+        }
     }, [])
 
-    // Fetch full list on first open
-    useEffect(() => {
-        if (open && !loaded) {
-            const fetchNotifications = async () => {
-                try {
-                    const data = await getNotifications()
-                    setItems(data)
-                    setBadgeCount(data.filter((n) => !n.read).length)
-                    setError(null)
-                } catch (e) {
-                    setItems([])
-                    setBadgeCount(0)
-                    setError("Tidak ada notifikasi")
-                }
-
-                setLoaded(true)
-            }
-
-            void fetchNotifications()
+    const fetchAll = useCallback(async () => {
+        try {
+            const data = await getNotifications()
+            setItems(data)
+            setBadgeCount(data.filter((n) => !n.read).length)
+            setError(null)
+        } catch {
+            setItems([])
+            setBadgeCount(0)
+            setError("Tidak ada notifikasi")
         }
-    }, [open, loaded])
+
+        setLoaded(true)
+    }, [])
+
+    useEffect(() => {
+        fetchUnreadCount()
+        const interval = setInterval(fetchUnreadCount, 30_000)
+        return () => clearInterval(interval)
+    }, [fetchUnreadCount])
+
+    useEffect(() => {
+        if (!open) return
+        if (!loaded) {
+            fetchAll()
+        }
+        const interval = setInterval(fetchAll, 30_000)
+        return () => clearInterval(interval)
+    }, [open, loaded, fetchAll])
 
     // Close on click outside
     useEffect(() => {

@@ -1,9 +1,16 @@
-import { Trophy } from "lucide-react"
+import { Trophy, AlertTriangle } from "lucide-react"
 import { getUsers } from "@/lib/user.api"
 import PointsLeaderboard from "@/components/admin/PointsLeaderboard"
 
 export default async function AdminPointsPage() {
-    const users = (await getUsers()).filter((u) => u.role === "user")
+    let users: Awaited<ReturnType<typeof getUsers>> = []
+    let error: string | null = null
+
+    try {
+        users = (await getUsers()).filter((u) => u.role === "user")
+    } catch (e: any) {
+        error = e?.response?.data?.message ?? e?.message ?? "Gagal memuat data"
+    }
 
     return (
         <div className="w-full space-y-5">
@@ -44,7 +51,33 @@ export default async function AdminPointsPage() {
                 </div>
             </div>
 
-            <PointsLeaderboard users={users} />
+            {error ? (
+                <div
+                    className="flex flex-col items-center gap-3 rounded-2xl px-5 py-12 text-center"
+                    style={{
+                        background: "#FCFBF8",
+                        border: "1px solid #FECACA",
+                    }}
+                >
+                    <div
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                        style={{ background: "#FEE2E2", color: "#991B1B" }}
+                    >
+                        <AlertTriangle size={24} />
+                    </div>
+                    <p
+                        className="text-[14px] font-semibold"
+                        style={{ color: "#991B1B" }}
+                    >
+                        {error}
+                    </p>
+                    <p className="text-[12px]" style={{ color: "#6B7280" }}>
+                        Hubungi superadmin untuk akses fitur ini
+                    </p>
+                </div>
+            ) : (
+                <PointsLeaderboard users={users} />
+            )}
         </div>
     )
 }

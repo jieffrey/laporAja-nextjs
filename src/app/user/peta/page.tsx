@@ -8,7 +8,7 @@ const PetaPage = dynamic(() => import("@/components/peta/PetaPage"), {
         <div
             className="flex items-center justify-center"
             style={{
-                height: "calc(100vh - 56px)",
+                height: "calc(100vh - 96px)",
                 background: "#F8F6F0",
             }}
         >

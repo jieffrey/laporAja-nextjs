@@ -24,10 +24,12 @@ export default function AdminUsersPage() {
   const [loadingId,  setLoadingId]  = useState<number | null>(null)
   const [confirmDel, setConfirmDel] = useState<number | null>(null)
 
+const isSuperadmin = session?.user?.role === "superadmin"
+
 useEffect(() => {
     if (status === "loading") return
     if (status === "unauthenticated") { router.push("/auth/login"); return }
-    if (session?.user?.role !== "superadmin") { router.push("/admin"); return }
+    if (!["superadmin", "admin"].includes(session?.user?.role ?? "")) { router.push("/admin"); return }
 
     const fetchUsers = async () => {
       try {
@@ -139,7 +141,7 @@ useEffect(() => {
                         <span className="text-slate-400 text-[11px] ml-1">pts</span>
                       </td>
                       <td className="px-4 py-3.5">
-                        {isSelf ? (
+                        {isSelf || !isSuperadmin ? (
                           <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${ROLE_STYLES[u.role]}`}>
                             {USER_ROLE_LABELS[u.role]}
                           </span>
@@ -157,7 +159,7 @@ useEffect(() => {
                         {new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                       </td>
                       <td className="px-4 py-3.5">
-                        {!isSelf && (
+                        {!isSelf && isSuperadmin && (
                           confirmDel === u.id ? (
                             <div className="flex items-center gap-2">
                               <button onClick={() => handleDelete(u.id)} disabled={isLoading}

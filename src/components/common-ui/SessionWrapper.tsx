@@ -15,8 +15,8 @@ export default function SessionWrapper({
   return (
     <SessionProvider
       session={session}
-      refetchOnWindowFocus={true}   // refresh session saat tab difokus
-      refetchInterval={5 * 60}      // refresh tiap 5 menit
+      refetchOnWindowFocus={true}
+      refetchInterval={5 * 60}
     >
       {children}
     </SessionProvider>

@@ -34,7 +34,7 @@ export const adminMenus: MenuItem[] = [
     label: "Kelola Pengguna",
     href: "/admin/users",
     Icon: RiTeamFill,
-    roles: ["superadmin"],
+    roles: ["superadmin", "admin"],
   },
   {
     label: "Poin & Reward",

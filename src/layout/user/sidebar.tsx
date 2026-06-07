@@ -54,16 +54,22 @@ export default function UserSidebar({ name }: Props) {
                     transition: all 0.18s ease;
                 }
                 .nav-item:hover {
-                    background: #F1EDE2;
-                    color: #374151;
+                    background: #14B8A6;
+                    color: #ffffff;
+                }
+                .nav-item:hover svg {
+                    color: #ffffff;
                 }
                 .nav-active {
                     background: #CCFBF1;
                     color: #0F766E;
                 }
                 .nav-active:hover {
-                    background: #CCFBF1;
-                    color: #0F766E;
+                    background: #14B8A6;
+                    color: #ffffff;
+                }
+                .nav-active:hover svg {
+                    color: #ffffff;
                 }
                 .logout-btn {
                     color: #9CA3AF;
@@ -84,65 +90,64 @@ export default function UserSidebar({ name }: Props) {
                     color: #0F766E;
                     border-color: #5EEAD4;
                 }
+                .fade-label {
+                    transition: opacity 0.2s ease, width 0.2s ease;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
             `}</style>
 
             <aside
                 className="sidebar sticky top-0 hidden h-screen flex-col lg:flex"
                 style={{
-                    width: collapsed ? 68 : 220,
+                    width: collapsed ? 60 : 220,
                     background: "#FCFBF8",
                     borderRight: "1px solid #E8E4D9",
                     flexShrink: 0,
                 }}
             >
-                {/* Logo + toggle */}
+                {/* Logo + collapse toggle */}
                 <div
                     className="flex items-center justify-between px-3 py-[14px]"
                     style={{ borderBottom: "1px solid #E8E4D9" }}
                 >
-                    <Link
-                        href="/user"
-                        className="flex items-center gap-2.5 overflow-hidden"
-                    >
-                        <div
-                            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
-                            style={{
-                                background:
-                                    "linear-gradient(135deg, #0F766E, #14B8A6)",
-                                boxShadow: "0 4px 12px rgba(15,118,110,0.25)",
-                            }}
+                    {!collapsed ? (
+                        <Link
+                            href="/user"
+                            className="flex items-center gap-2.5 overflow-visible"
                         >
-                            <RiMapPin2Fill size={14} className="text-white" />
-                        </div>
-                        {!collapsed && (
-                            <div>
-                                <p
-                                    className="text-[14px] font-extrabold leading-none tracking-tight"
-                                    style={{ color: "#111827" }}
-                                >
-                                    LaporAja
-                                </p>
-                                <p
-                                    className="mt-0.5 text-[10px] leading-none"
-                                    style={{ color: "#9CA3AF" }}
-                                >
-                                    Panel Warga
-                                </p>
+                            <div
+                                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
+                                style={{
+                                    background:
+                                        "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                    boxShadow:
+                                        "0 4px 12px rgba(15,118,110,0.25)",
+                                }}
+                            >
+                                <RiMapPin2Fill size={14} className="text-white" />
                             </div>
-                        )}
-                    </Link>
+                            <span
+                                className="fade-label text-[14px] font-extrabold tracking-tight"
+                                style={{ color: "#111827" }}
+                            >
+                                LaporAja
+                            </span>
+                        </Link>
+                    ) : (
+                        <div className="h-8 w-8" />
+                    )}
 
                     <button
                         onClick={() => setCollapsed((v) => !v)}
-                        className="toggle-btn flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md"
-                        aria-label={
-                            collapsed ? "Expand sidebar" : "Collapse sidebar"
-                        }
+                        className="toggle-btn flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        style={{ lineHeight: 0 }}
                     >
                         {collapsed ? (
-                            <RiArrowRightSLine size={14} />
+                            <RiArrowRightSLine size={16} />
                         ) : (
-                            <RiArrowLeftSLine size={14} />
+                            <RiArrowLeftSLine size={16} />
                         )}
                     </button>
                 </div>
@@ -167,9 +172,10 @@ export default function UserSidebar({ name }: Props) {
                                     active ? "nav-active" : "nav-item"
                                 }`}
                                 style={{
+                                    minHeight: 44,
                                     gap: collapsed ? 0 : 10,
                                     padding: collapsed
-                                        ? "10px 0"
+                                        ? "12px 0"
                                         : "9px 10px",
                                     justifyContent: collapsed
                                         ? "center"
@@ -182,9 +188,15 @@ export default function UserSidebar({ name }: Props) {
                                     className="flex-shrink-0"
                                 />
                                 {!collapsed && (
-                                    <span className="text-[13px] font-semibold">
+                                    <span className="fade-label text-[13px] font-semibold">
                                         {label}
                                     </span>
+                                )}
+                                {active && !collapsed && (
+                                    <span
+                                        className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                                        style={{ background: "#0F766E" }}
+                                    />
                                 )}
                             </Link>
                         )
@@ -248,12 +260,14 @@ export default function UserSidebar({ name }: Props) {
                             {initials}
                         </div>
                         {!collapsed && (
-                            <p
-                                className="min-w-0 flex-1 truncate text-[12px] font-semibold"
-                                style={{ color: "#111827" }}
-                            >
-                                {name}
-                            </p>
+                            <div className="min-w-0 flex-1">
+                                <p
+                                    className="truncate text-[12px] font-semibold"
+                                    style={{ color: "#111827" }}
+                                >
+                                    {name}
+                                </p>
+                            </div>
                         )}
                     </div>
 

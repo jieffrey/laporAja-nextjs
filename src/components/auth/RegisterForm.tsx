@@ -37,10 +37,7 @@ export default function RegisterForm() {
                 email: form.email,
                 password: form.password,
             });
-            if (typeof window !== "undefined" && res?.token != null) {
-                localStorage.setItem("token", String(res.token));
-            }
-            router.push("/user");
+            router.push("/auth/login");
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message);

@@ -131,7 +131,7 @@ export default function Navbar() {
               href="/auth/register"
               className="nav-register rounded-full px-5 py-2 text-sm font-bold"
             >
-              Daftar Gratis
+              Daftar
             </Link>
           </div>
 
@@ -216,7 +216,7 @@ export default function Navbar() {
               className="w-full rounded-2xl px-5 py-3 text-center text-base font-bold text-white"
               style={{ background: "linear-gradient(135deg, #0F766E, #14B8A6)" }}
             >
-              Daftar Gratis
+              Daftar
             </Link>
           </div>
         </div>

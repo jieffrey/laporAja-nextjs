@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Sparkles, Loader2, Check } from "lucide-react"
 import {
     createReportSchema,
     type CreateReportInput,
@@ -43,17 +43,29 @@ const inputStyle: React.CSSProperties = {
 const focusClass =
     "outline-none transition-all focus:bg-white focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20"
 
+type AISuggestion = {
+    category: string
+    priority: "Low" | "Medium" | "High"
+    confidence: number
+} | null
+
 export default function ReportForm() {
     const router = useRouter()
     const [submitError, setSubmitError] = useState("")
     const [images, setImages] = useState<File[]>([])
     const [imageError, setImageError] = useState("")
 
+    // AI suggestion state
+    const [aiLoading, setAiLoading] = useState(false)
+    const [aiSuggestion, setAiSuggestion] = useState<AISuggestion>(null)
+    const [aiApplied, setAiApplied] = useState(false)
+
     const {
         register,
         handleSubmit,
         setValue,
         watch,
+        getValues,
         formState: { errors, isSubmitting },
     } = useForm<CreateReportInput>({
         resolver: zodResolver(createReportSchema),
@@ -66,9 +78,48 @@ export default function ReportForm() {
 
     const latitude = watch("latitude")
     const longitude = watch("longitude")
+    const title = watch("title")
+    const description = watch("description")
+
+    // AI auto-categorize
+    const handleAISuggest = async () => {
+        const t = getValues("title")
+        const d = getValues("description")
+
+        if (!t && !d) return
+
+        setAiLoading(true)
+        setAiSuggestion(null)
+        setAiApplied(false)
+
+        try {
+            const res = await fetch("/api/ai/categorize", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: t, description: d }),
+            })
+            const json = await res.json()
+
+            if (json.success && json.data) {
+                setAiSuggestion(json.data)
+            }
+        } catch (e) {
+            console.error("AI suggestion failed:", e)
+        } finally {
+            setAiLoading(false)
+        }
+    }
+
+    const applyAISuggestion = () => {
+        if (!aiSuggestion) return
+        setValue("category", aiSuggestion.category, { shouldValidate: true })
+        setValue("priority", aiSuggestion.priority, { shouldValidate: true })
+        setAiApplied(true)
+    }
+
+    const canSuggest = (title?.length ?? 0) > 5 || (description?.length ?? 0) > 10
 
     const onSubmit = async (data: CreateReportInput) => {
-        // Validate images
         if (images.length === 0) {
             setImageError("Minimal 1 foto diperlukan")
             return
@@ -77,19 +128,19 @@ export default function ReportForm() {
         setSubmitError("")
 
         try {
-            // Prepare multipart FormData for createReport
-            const form = new FormData()
-            form.append("title", data.title)
-            form.append("description", data.description)
-            form.append("category", data.category)
-            form.append("priority", data.priority ?? "Medium")
-            if (data.latitude) form.append("latitude", data.latitude)
-            if (data.longitude) form.append("longitude", data.longitude)
+            const formData = new FormData()
+            formData.append("title", data.title)
+            formData.append("description", data.description)
+            formData.append("category", data.category)
+            formData.append("priority", data.priority)
+            if (data.latitude) formData.append("latitude", data.latitude)
+            if (data.longitude) formData.append("longitude", data.longitude)
 
-            // Append image files
-            images.forEach((f) => form.append("images", f))
+            images.forEach((file) => {
+                formData.append("images", file)
+            })
 
-            await createReport(form)
+            await createReport(formData)
             router.push("/user/laporan")
             router.refresh()
         } catch (err) {
@@ -144,6 +195,141 @@ export default function ReportForm() {
                 />
                 {errors.description && (
                     <FieldError message={errors.description.message} />
+                )}
+            </div>
+
+            {/* ── AI Suggestion ── */}
+            <div
+                className="rounded-xl p-4"
+                style={{
+                    background:
+                        aiSuggestion
+                            ? "linear-gradient(135deg, rgba(20,184,166,0.08), rgba(245,158,11,0.06))"
+                            : "#F8F6F0",
+                    border: aiSuggestion
+                        ? "1px solid #5EEAD4"
+                        : "1px solid #E8E4D9",
+                }}
+            >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <div
+                            className="flex h-7 w-7 items-center justify-center rounded-lg"
+                            style={{
+                                background:
+                                    "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                color: "#fff",
+                            }}
+                        >
+                            <Sparkles size={13} />
+                        </div>
+                        <div>
+                            <p
+                                className="text-[13px] font-bold"
+                                style={{ color: "#111827" }}
+                            >
+                                AI Auto-Kategorisasi
+                            </p>
+                            <p
+                                className="text-[11px]"
+                                style={{ color: "#9CA3AF" }}
+                            >
+                                Deteksi otomatis dari judul &amp; deskripsi
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleAISuggest}
+                        disabled={aiLoading || !canSuggest}
+                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white transition-all disabled:opacity-50"
+                        style={{
+                            background:
+                                "linear-gradient(135deg, #0F766E, #14B8A6)",
+                            boxShadow: canSuggest
+                                ? "0 2px 8px rgba(15,118,110,0.25)"
+                                : "none",
+                        }}
+                    >
+                        {aiLoading ? (
+                            <>
+                                <Loader2 size={12} className="animate-spin" />
+                                Menganalisis...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles size={12} />
+                                Deteksi
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* AI Result */}
+                {aiSuggestion && (
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <span
+                            className="rounded-full px-2.5 py-1 text-[11px] font-bold"
+                            style={{
+                                background: "#CCFBF1",
+                                color: "#0F766E",
+                            }}
+                        >
+                            {aiSuggestion.category}
+                        </span>
+                        <span
+                            className="rounded-full px-2.5 py-1 text-[11px] font-bold"
+                            style={{
+                                background:
+                                    aiSuggestion.priority === "High"
+                                        ? "#FEE2E2"
+                                        : aiSuggestion.priority === "Medium"
+                                            ? "#FEF3C7"
+                                            : "#CCFBF1",
+                                color:
+                                    aiSuggestion.priority === "High"
+                                        ? "#991B1B"
+                                        : aiSuggestion.priority === "Medium"
+                                            ? "#92400E"
+                                            : "#0F766E",
+                            }}
+                        >
+                            {aiSuggestion.priority}
+                        </span>
+                        <span
+                            className="text-[10px]"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            {Math.round(aiSuggestion.confidence * 100)}%
+                            confidence
+                        </span>
+
+                        {!aiApplied ? (
+                            <button
+                                type="button"
+                                onClick={applyAISuggestion}
+                                className="ml-auto flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-bold text-white"
+                                style={{
+                                    background:
+                                        "linear-gradient(135deg, #F59E0B, #EA580C)",
+                                    boxShadow:
+                                        "0 2px 8px rgba(245,158,11,0.25)",
+                                }}
+                            >
+                                <Check size={11} />
+                                Terapkan
+                            </button>
+                        ) : (
+                            <span
+                                className="ml-auto flex items-center gap-1 text-[11px] font-bold"
+                                style={{ color: "#065F46" }}
+                            >
+                                <Check size={11} />
+                                Diterapkan
+                            </span>
+                        )}
+                    </div>
                 )}
             </div>
 

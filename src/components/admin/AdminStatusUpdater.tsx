@@ -1,21 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Check, Loader2, Info } from "lucide-react"
-import type { Report, ReportStatus, ReportPriority } from "@/lib/report.api"
-import { REPORT_STATUS, REPORT_PRIORITY } from "@/lib/constant"
+import { useState } from "react"
+import { Check, Loader2, Save, Info, Navigation, ExternalLink } from "lucide-react"
+import type { Report, ReportStatus } from "@/lib/report.api"
+import { REPORT_STATUS } from "@/lib/constant"
 import { updateReportStatus } from "@/lib/report.api"
+import PriorityBadge from "@/components/common-ui/PriorityBadge"
 
 type Props = {
     report: Report
     onUpdate?: (r: Report) => void
-}
-
-// Local priority button styles (override constant.tw)
-const PRIORITY_ACTIVE: Record<ReportPriority, { bg: string; color: string }> = {
-    "Low":    { bg: "#CCFBF1", color: "#0F766E" },
-    "Medium": { bg: "#FEF3C7", color: "#92400E" },
-    "High":   { bg: "#FEE2E2", color: "#991B1B" },
 }
 
 const formatDate = (iso: string) =>
@@ -27,140 +21,126 @@ const formatDate = (iso: string) =>
 
 export default function AdminStatusUpdater({ report, onUpdate }: Props) {
     const [status, setStatus] = useState<ReportStatus>(report.status)
-    const [priority, setPriority] = useState<ReportPriority>(report.priority)
+    const [lastSavedStatus, setLastSavedStatus] = useState<ReportStatus>(report.status)
     const [loading, setLoading] = useState(false)
     const [saved, setSaved] = useState(false)
 
-    // Auto-save whenever status or priority changes
-    useEffect(() => {
-        const saveChanges = async () => {
-            setLoading(true)
-            try {
-                const updated = await updateReportStatus(report.id, { status, priority })
-                onUpdate?.(updated)
-                setSaved(true)
-                setTimeout(() => setSaved(false), 1500)
-            } catch (e) {
-                console.error(e)
-            } finally {
-                setLoading(false)
-            }
-        }
+    const hasChanged = status !== lastSavedStatus
 
-        // Don't save on initial mount
-        if (status !== report.status || priority !== report.priority) {
-            saveChanges()
+    const handleSave = async () => {
+        if (!hasChanged || loading) return
+        setLoading(true)
+        try {
+            const updated = await updateReportStatus(report.id, {
+                status,
+                priority: report.priority,
+            })
+            onUpdate?.(updated)
+            setLastSavedStatus(status)
+            setSaved(true)
+            setTimeout(() => setSaved(false), 2500)
+        } catch (e) {
+            console.error(e)
         }
-    }, [status, priority, report.id, report.status, report.priority, onUpdate])
-
-    const handleStatusChange = (newStatus: ReportStatus) => {
-        setStatus(newStatus)
+        setLoading(false)
     }
 
-    const handlePriorityChange = (newPriority: ReportPriority) => {
-        setPriority(newPriority)
-    }
+    const hasCoords = report.latitude && report.longitude
 
     return (
         <div className="space-y-3">
             {/* ── Status picker ── */}
-            <Section title="Status">
+            <Section title="Ubah Status">
                 <div className="space-y-1.5">
                     {(Object.keys(REPORT_STATUS) as ReportStatus[]).map((s) => {
                         const cfg = REPORT_STATUS[s]
                         const active = status === s
                         return (
-                            <StatusOption
-                                key={s}
-                                label={cfg.label}
-                                dot={cfg.dot}
-                                active={active}
-                                onClick={() => handleStatusChange(s)}
-                                loading={loading}
-                            />
-                        )
-                    })}
-                </div>
-            </Section>
-
-            {/* ── Priority picker ── */}
-            <Section title="Priority">
-                <div className="grid grid-cols-3 gap-1.5">
-                    {(Object.keys(REPORT_PRIORITY) as ReportPriority[]).map((p) => {
-                        const active = priority === p
-                        const activeStyle = PRIORITY_ACTIVE[p]
-                        return (
                             <button
-                                key={p}
-                                onClick={() => handlePriorityChange(p)}
-                                disabled={loading}
-                                className="rounded-lg py-2 text-[12px] font-bold transition-all disabled:opacity-50"
+                                key={s}
+                                onClick={() => setStatus(s)}
+                                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all"
                                 style={
                                     active
                                         ? {
-                                              background: activeStyle.bg,
-                                              color: activeStyle.color,
-                                              border: `1px solid ${activeStyle.color}30`,
+                                              background:
+                                                  "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                              color: "#fff",
+                                              boxShadow:
+                                                  "0 2px 8px rgba(15,118,110,0.25)",
                                           }
                                         : {
-                                              background: "#F8F6F0",
+                                              background: "transparent",
                                               color: "#6B7280",
-                                              border: "1px solid #E8E4D9",
                                           }
                                 }
                             >
-                                {p}
+                                <span
+                                    className="h-2 w-2 shrink-0 rounded-full"
+                                    style={{ background: cfg.dot }}
+                                />
+                                <span className="flex-1 text-left">
+                                    {cfg.label}
+                                </span>
+                                {active && <Check size={14} />}
                             </button>
                         )
                     })}
                 </div>
             </Section>
 
-            {/* ── Auto-save status ── */}
-            {(loading || saved) && (
-                <div
-                    className="flex items-center justify-center gap-2 rounded-lg py-2 text-[12px] font-semibold"
-                    style={{
-                        background: saved ? "#D1FAE5" : "#F0F9FF",
-                        color: saved ? "#065F46" : "#0369A1",
-                    }}
-                >
-                    {loading ? (
-                        <>
-                            <Loader2 size={14} className="animate-spin" />
-                            Menyimpan...
-                        </>
-                    ) : (
-                        <>
-                            <Check size={14} />
-                            Tersimpan
-                        </>
-                    )}
-                </div>
-            )}
+            {/* ── Save button ── */}
+            <button
+                onClick={handleSave}
+                disabled={loading || !hasChanged || saved}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-bold transition-all active:scale-[0.98] disabled:active:scale-100"
+                style={{
+                    background: saved
+                        ? "linear-gradient(135deg, #065F46, #10B981)"
+                        : hasChanged
+                            ? "linear-gradient(135deg, #0F766E, #14B8A6)"
+                            : "#F1EDE2",
+                    color: hasChanged || saved ? "#fff" : "#9CA3AF",
+                    boxShadow:
+                        hasChanged || saved
+                            ? "0 4px 14px rgba(15,118,110,0.25)"
+                            : "none",
+                    cursor:
+                        loading || !hasChanged || saved
+                            ? "not-allowed"
+                            : "pointer",
+                }}
+            >
+                {loading ? (
+                    <Loader2 size={15} className="animate-spin" />
+                ) : saved ? (
+                    <>
+                        <Check size={15} /> Tersimpan
+                    </>
+                ) : (
+                    <>
+                        <Save size={14} /> Simpan Perubahan
+                    </>
+                )}
+            </button>
 
             {/* ── Info ── */}
-            <Section title="Info" icon={<Info size={12} />}>
-                <div className="space-y-2">
-                    {[
-                        ["Pelapor", report.name],
-                        ["Kategori", report.category],
-                        ["Dibuat", formatDate(report.created_at)],
-                        ["Diupdate", formatDate(report.updated_at)],
-                    ].map(([label, value]) => (
-                        <div
-                            key={label}
-                            className="flex justify-between gap-3 text-[12px]"
-                        >
-                            <span style={{ color: "#9CA3AF" }}>{label}</span>
-                            <span
-                                className="truncate text-right font-semibold"
-                                style={{ color: "#374151" }}
-                            >
-                                {value}
-                            </span>
-                        </div>
-                    ))}
+            <Section title="Info Laporan" icon={<Info size={12} />}>
+                <div className="space-y-2.5">
+                    <InfoRow label="Pelapor" value={report.name} />
+                    <InfoRow label="Kategori" value={report.category} />
+                    <div className="flex items-center justify-between gap-3 text-[12px]">
+                        <span style={{ color: "#9CA3AF" }}>Prioritas</span>
+                        <PriorityBadge priority={report.priority} />
+                    </div>
+                    <InfoRow
+                        label="Dibuat"
+                        value={formatDate(report.created_at)}
+                    />
+                    <InfoRow
+                        label="Diupdate"
+                        value={formatDate(report.updated_at)}
+                    />
                 </div>
             </Section>
         </div>
@@ -201,43 +181,16 @@ function Section({
     )
 }
 
-function StatusOption({
-    label,
-    dot,
-    active,
-    onClick,
-    loading,
-}: {
-    label: string
-    dot: string
-    active: boolean
-    onClick: () => void
-    loading: boolean
-}) {
+function InfoRow({ label, value }: { label: string; value: string }) {
     return (
-        <button
-            onClick={onClick}
-            disabled={loading}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-semibold transition-all disabled:opacity-50"
-            style={
-                active
-                    ? {
-                          background: "linear-gradient(135deg, #0F766E, #14B8A6)",
-                          color: "#fff",
-                          boxShadow: "0 2px 8px rgba(15,118,110,0.25)",
-                      }
-                    : {
-                          background: "transparent",
-                          color: "#6B7280",
-                      }
-            }
-        >
+        <div className="flex justify-between gap-3 text-[12px]">
+            <span style={{ color: "#9CA3AF" }}>{label}</span>
             <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ background: dot }}
-            />
-            <span className="flex-1 text-left">{label}</span>
-            {active && <Check size={14} />}
-        </button>
+                className="truncate text-right font-semibold"
+                style={{ color: "#374151" }}
+            >
+                {value}
+            </span>
+        </div>
     )
 }

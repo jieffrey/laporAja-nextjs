@@ -38,12 +38,20 @@ export default function UserReportsPage() {
 
     useEffect(() => {
         if (authStatus !== "authenticated") return
-        getReports()
-            .then((data) => {
+
+        const fetchReports = async () => {
+            try {
+                const data = await getReports()
                 const userId = Number(session?.user?.id)
                 setReports(data.filter((r) => r.user_id === userId))
-            })
-            .finally(() => setLoading(false))
+            } catch (e) {
+                console.warn(e)
+            }
+
+            setLoading(false)
+        }
+
+        void fetchReports()
     }, [authStatus, session?.user?.id])
 
     const filtered = useMemo(

@@ -4,6 +4,7 @@ export type ReportStatus   = "Pending" | "In Progress" | "Resolved" | "Rejected"
 export type ReportPriority = "Low" | "Medium" | "High"
 
 export interface Report {
+    images: any
     id: number
     user_id: number
     name: string
@@ -49,17 +50,9 @@ export async function getReportById(id: number): Promise<Report> {
     return res.data.data
 }
 
-export async function createReport(payload: CreateReportPayload): Promise<Report> {
-    const form = new FormData()
-    form.append("title",       payload.title)
-    form.append("description", payload.description)
-    form.append("category",    payload.category)
-    if (payload.priority)     form.append("priority",     payload.priority)
-    if (payload.latitude)     form.append("latitude",     payload.latitude)
-    if (payload.longitude)    form.append("longitude",    payload.longitude)
-    if (payload.image_before) form.append("image_before", payload.image_before)
-    const res = await api.post("/reports", form, {
-        headers: { "Content-Type": "multipart/form-data" },
+export async function createReport(formData: FormData): Promise<Report> {
+    const res = await api.post("/reports", formData, {
+        transformRequest: [(data: any) => data],
     })
     return res.data.data
 }

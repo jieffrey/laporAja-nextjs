@@ -30,3 +30,8 @@ export async function updateUserRole(id: number, role: UserRole): Promise<User> 
 export async function deleteUser(id: number): Promise<void> {
     await api.delete(`/user/${id}`)
 }
+
+export async function getLeaderboard(): Promise<User[]> {
+    const res = await api.get("/user/leaderboard")
+    return res.data.data
+}

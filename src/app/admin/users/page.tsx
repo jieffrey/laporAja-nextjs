@@ -28,7 +28,19 @@ useEffect(() => {
     if (status === "loading") return
     if (status === "unauthenticated") { router.push("/auth/login"); return }
     if (session?.user?.role !== "superadmin") { router.push("/admin"); return }
-    getUsers().then(setUsers).finally(() => setLoading(false))
+
+    const fetchUsers = async () => {
+      try {
+        const data = await getUsers()
+        setUsers(data)
+      } catch (e) {
+        console.warn(e)
+      }
+
+      setLoading(false)
+    }
+
+    void fetchUsers()
   }, [status, session, router])
 
   const filtered = users.filter(u =>
@@ -41,9 +53,11 @@ useEffect(() => {
     try {
       await updateUserRole(id, role)
       setUsers(prev => prev.map(u => u.id === id ? { ...u, role } : u))
-    } finally {
-      setLoadingId(null)
+    } catch (e) {
+      console.warn(e)
     }
+
+    setLoadingId(null)
   }
 
   const handleDelete = async (id: number) => {
@@ -52,9 +66,11 @@ useEffect(() => {
       await deleteUser(id)
       setUsers(prev => prev.filter(u => u.id !== id))
       setConfirmDel(null)
-    } finally {
-      setLoadingId(null)
+    } catch (e) {
+      console.warn(e)
     }
+
+    setLoadingId(null)
   }
 
   if (loading) return (

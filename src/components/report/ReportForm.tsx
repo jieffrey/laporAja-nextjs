@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle, Upload } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import {
     createReportSchema,
     type CreateReportInput,
@@ -13,22 +13,26 @@ import {
 import { REPORT_CATEGORIES } from "@/lib/constant"
 import { createReport } from "@/lib/report.api"
 import Button from "@/components/common-ui/Button"
+import ImageUploader from "@/components/common-ui/ImageUploader"
 
-const LocationPicker = dynamic(() => import("./LocationPicker"), {
-    ssr: false,
-    loading: () => (
-        <div
-            className="flex h-56 items-center justify-center rounded-2xl text-[13px]"
-            style={{
-                background: "#F8F6F0",
-                border: "1px solid #E8E4D9",
-                color: "#9CA3AF",
-            }}
-        >
-            Memuat peta...
-        </div>
-    ),
-})
+const LocationPicker = dynamic(
+    () => import("@/components/report/LocationPicker"),
+    {
+        ssr: false,
+        loading: () => (
+            <div
+                className="flex h-56 items-center justify-center rounded-2xl text-[13px]"
+                style={{
+                    background: "#F8F6F0",
+                    border: "1px solid #E8E4D9",
+                    color: "#9CA3AF",
+                }}
+            >
+                Memuat peta...
+            </div>
+        ),
+    }
+)
 
 const inputStyle: React.CSSProperties = {
     background: "#FCFBF8",
@@ -42,6 +46,8 @@ const focusClass =
 export default function ReportForm() {
     const router = useRouter()
     const [submitError, setSubmitError] = useState("")
+    const [images, setImages] = useState<File[]>([])
+    const [imageError, setImageError] = useState("")
 
     const {
         register,
@@ -62,22 +68,35 @@ export default function ReportForm() {
     const longitude = watch("longitude")
 
     const onSubmit = async (data: CreateReportInput) => {
+        // Validate images
+        if (images.length === 0) {
+            setImageError("Minimal 1 foto diperlukan")
+            return
+        }
+        setImageError("")
         setSubmitError("")
+
         try {
-            await createReport({
-                title: data.title,
-                description: data.description,
-                category: data.category,
-                priority: data.priority,
-                latitude: data.latitude || undefined,
-                longitude: data.longitude || undefined,
-                image_before: data.image_before ?? null,
-            })
+            // Prepare multipart FormData for createReport
+            const form = new FormData()
+            form.append("title", data.title)
+            form.append("description", data.description)
+            form.append("category", data.category)
+            form.append("priority", data.priority ?? "Medium")
+            if (data.latitude) form.append("latitude", data.latitude)
+            if (data.longitude) form.append("longitude", data.longitude)
+
+            // Append image files
+            images.forEach((f) => form.append("images", f))
+
+            await createReport(form)
             router.push("/user/laporan")
             router.refresh()
         } catch (err) {
             setSubmitError(
-                err instanceof Error ? err.message : "Gagal mengirim laporan"
+                err instanceof Error
+                    ? err.message
+                    : "Gagal mengirim laporan"
             )
         }
     }
@@ -180,48 +199,16 @@ export default function ReportForm() {
                 </div>
             </div>
 
-            {/* Image upload */}
-            <div>
-                <label
-                    htmlFor="image_before"
-                    className="mb-1.5 block text-[13px] font-bold"
-                    style={{ color: "#374151" }}
-                >
-                    Foto kondisi (opsional)
-                </label>
-                <div
-                    className="flex items-center gap-3 rounded-xl px-4 py-3"
-                    style={{
-                        background: "#F8F6F0",
-                        border: "1px dashed #E8E4D9",
-                    }}
-                >
-                    <div
-                        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
-                        style={{ background: "#CCFBF1", color: "#0F766E" }}
-                    >
-                        <Upload size={16} />
-                    </div>
-                    <input
-                        id="image_before"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="block w-full text-[13px] file:mr-3 file:rounded-full file:border-0 file:px-4 file:py-1.5 file:text-[12px] file:font-bold"
-                        style={{
-                            color: "#6B7280",
-                        }}
-                        onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            setValue("image_before", file ?? null, {
-                                shouldValidate: true,
-                            })
-                        }}
-                    />
-                </div>
-                {errors.image_before && (
-                    <FieldError message={errors.image_before.message} />
-                )}
-            </div>
+            {/* Multi image uploader */}
+            <ImageUploader
+                files={images}
+                onChange={(files) => {
+                    setImages(files)
+                    if (files.length > 0) setImageError("")
+                }}
+                max={5}
+                error={imageError}
+            />
 
             {/* Location */}
             <LocationPicker
@@ -258,7 +245,9 @@ export default function ReportForm() {
                     type="submit"
                     variant="primary"
                     size="md"
-                    className={isSubmitting ? "pointer-events-none opacity-70" : ""}
+                    className={
+                        isSubmitting ? "pointer-events-none opacity-70" : ""
+                    }
                 >
                     {isSubmitting ? "Mengirim..." : "Kirim Laporan"}
                 </Button>
@@ -279,7 +268,6 @@ export default function ReportForm() {
     )
 }
 
-/* ── Field error helper ── */
 function FieldError({ message }: { message?: string }) {
     if (!message) return null
     return (

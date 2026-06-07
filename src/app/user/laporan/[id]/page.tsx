@@ -7,7 +7,6 @@ import PriorityBadge from "@/components/common-ui/PriorityBadge"
 import ReportDescription from "@/components/admin/report-detail/ReportDescription"
 import ReportImages from "@/components/admin/report-detail/ReportImages"
 import ReportLocation from "@/components/admin/report-detail/ReportLocation"
-// import ReportComments from "@/components/admin/report-detail/ReportComments"
 import CommentSection from "@/components/comment/CommentSection"
 
 type Props = {
@@ -83,104 +82,18 @@ export default async function UserReportDetailPage({ params }: Props) {
             {/* Content sections */}
             <ReportDescription description={report.description} />
 
-            <ReportImages
-                imageBefore={report.image_before}
-                imageAfter={report.image_after}
-            />
+            <ReportImages {...({ 
+                images: report.images, 
+                imageBefore: report.image_before, 
+                imageAfter: report.image_after 
+                })} />
 
             <ReportLocation
                 latitude={report.latitude}
                 longitude={report.longitude}
             />
 
-            <CommentSection reportId={Number(id)} initialComments={comments}/>
-
-            {/* Status tracking card */}
-            <div
-                className="rounded-2xl px-5 py-4"
-                style={{
-                    background: "#FCFBF8",
-                    border: "1px solid #E8E4D9",
-                    boxShadow: "0 1px 3px rgba(15,118,110,0.04)",
-                }}
-            >
-                <p
-                    className="mb-3 text-[11px] font-bold uppercase tracking-widest"
-                    style={{ color: "#6B7280" }}
-                >
-                    Status Tracking
-                </p>
-                <div className="flex items-center gap-2">
-                    {["Pending", "In Progress", "Resolved"].map((s, i) => {
-                        const isReached =
-                            s === "Pending"
-                                ? true
-                                : s === "In Progress"
-                                    ? ["In Progress", "Resolved"].includes(report.status)
-                                    : report.status === "Resolved"
-                        const isRejected = report.status === "Rejected"
-
-                        return (
-                            <div key={s} className="flex items-center gap-2">
-                                <div
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold"
-                                    style={
-                                        isRejected && s !== "Pending"
-                                            ? {
-                                                  background: "#F1EDE2",
-                                                  color: "#9CA3AF",
-                                              }
-                                            : isReached
-                                                ? {
-                                                      background:
-                                                          "linear-gradient(135deg, #0F766E, #14B8A6)",
-                                                      color: "#fff",
-                                                  }
-                                                : {
-                                                      background: "#F1EDE2",
-                                                      color: "#9CA3AF",
-                                                  }
-                                    }
-                                >
-                                    {i + 1}
-                                </div>
-                                <span
-                                    className="text-[12px] font-semibold"
-                                    style={{
-                                        color: isReached && !isRejected
-                                            ? "#0F766E"
-                                            : "#9CA3AF",
-                                    }}
-                                >
-                                    {s}
-                                </span>
-                                {i < 2 && (
-                                    <div
-                                        className="h-px w-6"
-                                        style={{
-                                            background:
-                                                isReached && !isRejected
-                                                    ? "#14B8A6"
-                                                    : "#E8E4D9",
-                                        }}
-                                    />
-                                )}
-                            </div>
-                        )
-                    })}
-                </div>
-                {report.status === "Rejected" && (
-                    <p
-                        className="mt-3 rounded-lg px-3 py-2 text-[12px] font-medium"
-                        style={{
-                            background: "#FEE2E2",
-                            color: "#991B1B",
-                        }}
-                    >
-                        Laporan ini ditolak oleh admin.
-                    </p>
-                )}
-            </div>
+            <CommentSection reportId={Number(id)} initialComments={comments} />
         </div>
     )
 }

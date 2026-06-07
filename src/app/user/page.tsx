@@ -27,9 +27,18 @@ export default function UserDashboardPage() {
 
     useEffect(() => {
         if (status !== "authenticated") return
-        getReports()
-            .then(setAllReports)
-            .finally(() => setLoading(false))
+
+        const fetchReports = async () => {
+            try {
+                const data = await getReports()
+                setAllReports(data)
+            } catch (e) {
+                console.warn(e)
+            }
+            setLoading(false)
+        }
+
+        void fetchReports()
     }, [status])
 
     const userId = Number(session?.user?.id)

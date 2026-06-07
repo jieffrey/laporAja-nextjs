@@ -47,9 +47,9 @@ export default function RegisterForm() {
             } else {
                 setError("Terjadi kesalahan, coba lagi.");
             }
-        } finally {
-            setLoading(false);
         }
+
+        setLoading(false);
     };
 
     return (

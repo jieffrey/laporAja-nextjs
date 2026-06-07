@@ -41,9 +41,18 @@ export default function ExplorePage() {
     // Fetch reports
     useEffect(() => {
         if (status !== "authenticated") return
-        getReports()
-            .then(setReports)
-            .finally(() => setLoading(false))
+        const fetchReports = async () => {
+            try {
+                const data = await getReports()
+                setReports(data)
+            } catch (e) {
+                console.warn(e)
+            }
+
+            setLoading(false)
+        }
+
+        void fetchReports()
     }, [status])
 
     // Request GPS when switching to "terdekat"

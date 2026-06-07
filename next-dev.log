@@ -1,0 +1,18 @@
+
+> laporaja-next@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3001
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://127.0.0.1:3001
+- Network:       http://127.0.0.1:3001
+- Environments: .env
+✓ Ready in 562ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          18464
+- Dir:          C:\Users\kalsah\pengaduan-masyarakat\laporaja-next
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 18464 /F to stop it.
+[?25h

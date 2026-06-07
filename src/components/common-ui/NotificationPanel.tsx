@@ -58,18 +58,22 @@ export default function NotificationPanel() {
     // Fetch full list on first open
     useEffect(() => {
         if (open && !loaded) {
-            getNotifications()
-                .then((data) => {
+            const fetchNotifications = async () => {
+                try {
+                    const data = await getNotifications()
                     setItems(data)
                     setBadgeCount(data.filter((n) => !n.read).length)
                     setError(null)
-                })
-                .catch(() => {
+                } catch (e) {
                     setItems([])
                     setBadgeCount(0)
                     setError("Tidak ada notifikasi")
-                })
-                .finally(() => setLoaded(true))
+                }
+
+                setLoaded(true)
+            }
+
+            void fetchNotifications()
         }
     }, [open, loaded])
 

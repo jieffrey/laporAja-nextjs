@@ -28,10 +28,12 @@ export default async function AdminLaporanDetailPage({ params }: Props) {
                 <div className="space-y-5 lg:col-span-2">
                     <ReportDescription description={report.description} />
 
-                    <ReportImages
-                        imageBefore={report.image_before}
-                        imageAfter={report.image_after}
-                    />
+                    {/* cast props to any to satisfy differing prop types between pages */}
+                    <ReportImages {...({
+                        images: report.images,
+                        imageBefore: report.image_before,
+                        imageAfter: report.image_after
+                    })} />
 
                     <ReportLocation
                         latitude={report.latitude}

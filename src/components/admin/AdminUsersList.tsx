@@ -38,9 +38,9 @@ export default function AdminUsersList({ users, currentUserId }: Props) {
             router.refresh()
         } catch (e) {
             console.error(e)
-        } finally {
-            setLoadingId(null)
         }
+
+        setLoadingId(null)
     }
 
     const handleDelete = async (id: number) => {
@@ -51,9 +51,9 @@ export default function AdminUsersList({ users, currentUserId }: Props) {
             router.refresh()
         } catch (e) {
             console.error(e)
-        } finally {
-            setLoadingId(null)
         }
+
+        setLoadingId(null)
     }
 
     return (

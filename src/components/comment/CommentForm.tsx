@@ -24,9 +24,9 @@ export default function CommentForm({ reportId, onCommentAdded }: Props) {
             onCommentAdded()
         } catch (e) {
             console.error(e)
-        } finally {
-            setLoading(false)
         }
+
+        setLoading(false)
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

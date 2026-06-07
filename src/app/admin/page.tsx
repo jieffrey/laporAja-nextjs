@@ -59,9 +59,11 @@ export default function AdminDashboardPage() {
                 ])
                 setReports(r)
                 setUsers(u)
-            } finally {
-                setLoading(false)
+            } catch (e) {
+                console.warn(e)
             }
+
+            setLoading(false)
         }
 
         fetchAll()

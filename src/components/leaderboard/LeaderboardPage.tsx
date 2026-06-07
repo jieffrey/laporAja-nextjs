@@ -12,7 +12,7 @@ import {
     Flame,
     Search,
 } from "lucide-react"
-import { getUsers } from "@/lib/user.api"
+import { getLeaderboard } from "@/lib/user.api"
 import type { User } from "@/lib/user.api"
 import { POINTS_CONFIG } from "@/lib/constant"
 import UserRankCard from "@/components/leaderboard/UserRankCard"
@@ -38,9 +38,19 @@ export default function LeaderboardPage() {
 
     useEffect(() => {
         if (status !== "authenticated") return
-        getUsers()
-            .then(setUsers)
-            .finally(() => setLoading(false))
+
+        const fetchLeaderboard = async () => {
+            try {
+                const data = await getLeaderboard()
+                setUsers(data)
+            } catch (e) {
+                console.warn(e)
+            }
+
+            setLoading(false)
+        }
+
+        void fetchLeaderboard()
     }, [status])
 
     const sorted = useMemo(

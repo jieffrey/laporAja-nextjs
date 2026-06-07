@@ -27,9 +27,9 @@ export default function CommentSection({
             setComments(data)
         } catch (e) {
             console.error(e)
-        } finally {
-            setLoading(false)
         }
+
+        setLoading(false)
     }, [reportId])
 
     useEffect(() => {

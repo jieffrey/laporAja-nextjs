@@ -1,4 +1,5 @@
 import { MapPin, ExternalLink } from "lucide-react"
+import ReportLocationMap from "./ReportLocationMap"
 
 type Props = {
     latitude?: number | string | null
@@ -7,8 +8,8 @@ type Props = {
 
 export default function ReportLocation({ latitude, longitude }: Props) {
     if (!latitude || !longitude) return null
-
-    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
+    
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`
 
     return (
         <div
@@ -78,7 +79,9 @@ export default function ReportLocation({ latitude, longitude }: Props) {
                 </a>
             </div>
 
-            {/* TODO: tambah LeafletMap dynamic import */}
+            <div className="my-4">
+                <ReportLocationMap latitude={latitude} longitude={longitude} />
+            </div>
         </div>
     )
 }

@@ -38,15 +38,21 @@ export default function ProfileView() {
 
     useEffect(() => {
         if (status !== "authenticated") return
-        getReports()
-            .then((data) =>
+        const fetchReports = async () => {
+            try {
+                const data = await getReports()
                 setReports(
-                    data.filter(
-                        (r) => r.user_id === Number(session?.user?.id)
-                    )
+                    data.filter((r) => r.user_id === Number(session?.user?.id))
                 )
-            )
-            .finally(() => setLoading(false))
+            } catch (e) {
+                console.warn(e)
+            }
+
+            setLoading(false)
+        }
+
+        if (status !== "authenticated") return
+        void fetchReports()
     }, [status, session?.user?.id])
 
     const name = session?.user?.name ?? "Pengguna"

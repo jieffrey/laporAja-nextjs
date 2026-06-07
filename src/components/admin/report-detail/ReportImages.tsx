@@ -1,13 +1,33 @@
 import { Camera } from "lucide-react"
 
 type Props = {
+    images?: string[] | string | null
     imageBefore?: string | null
     imageAfter?: string | null
 }
 
-export default function ReportImages({ imageBefore, imageAfter }: Props) {
-    // Don't render if no images at all
-    if (!imageBefore && !imageAfter) return null
+// PostgreSQL TEXT[] bisa return "{url1,url2}" string — parse safely
+function parseImages(raw: unknown): string[] {
+    if (!raw) return []
+    if (Array.isArray(raw)) return raw.filter(Boolean)
+    if (typeof raw === "string") {
+        // Handle PostgreSQL array format: {url1,url2}
+        const cleaned = raw.replace(/^\{|\}$/g, "")
+        if (!cleaned) return []
+        return cleaned.split(",").map((s) => s.trim().replace(/^"|"$/g, "")).filter(Boolean)
+    }
+    return []
+}
+
+export default function ReportImages({ images, imageBefore, imageAfter }: Props) {
+    const parsed = parseImages(images)
+
+    // Fallback to legacy single field
+    const allImages = parsed.length > 0 ? parsed : imageBefore ? [imageBefore] : []
+
+    const hasAfter = !!imageAfter
+
+    if (allImages.length === 0 && !hasAfter) return null
 
     return (
         <div
@@ -30,52 +50,59 @@ export default function ReportImages({ imageBefore, imageAfter }: Props) {
                     className="text-[11px] font-bold uppercase tracking-widest"
                     style={{ color: "#6B7280" }}
                 >
-                    Foto Bukti
+                    Foto Bukti ({allImages.length + (hasAfter ? 1 : 0)})
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {imageBefore && (
-                    <ImageCard label="Sebelum" src={imageBefore} accent="#EA580C" />
-                )}
-                {imageAfter && (
-                    <ImageCard label="Sesudah" src={imageAfter} accent="#0F766E" />
-                )}
-            </div>
-        </div>
-    )
-}
+            {/* Photos from reporter */}
+            {allImages.length > 0 && (
+                <div className="mb-3">
+                    <p
+                        className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                        style={{ color: "#EA580C" }}
+                    >
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#EA580C" }} />
+                        Foto Pelapor
+                    </p>
+                    <div
+                        className="grid gap-2"
+                        style={{
+                            gridTemplateColumns: `repeat(${Math.min(allImages.length, 3)}, minmax(0, 1fr))`,
+                        }}
+                    >
+                        {allImages.map((src, i) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                key={i}
+                                src={src}
+                                alt={`Foto ${i + 1}`}
+                                className="aspect-video w-full rounded-xl object-cover transition-transform duration-300 hover:scale-[1.02]"
+                                style={{ border: "1px solid #E8E4D9", cursor: "pointer" }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
 
-function ImageCard({
-    label,
-    src,
-    accent,
-}: {
-    label: string
-    src: string
-    accent: string
-}) {
-    return (
-        <div>
-            <div className="mb-1.5 flex items-center gap-1.5">
-                <span
-                    className="h-1.5 w-1.5 rounded-full"
-                    style={{ background: accent }}
-                />
-                <p
-                    className="text-[11px] font-semibold uppercase tracking-wider"
-                    style={{ color: accent }}
-                >
-                    {label}
-                </p>
-            </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src={src}
-                alt={label}
-                className="aspect-video w-full rounded-xl object-cover transition-transform duration-300 hover:scale-[1.02]"
-                style={{ border: "1px solid #E8E4D9" }}
-            />
+            {/* After photo from admin */}
+            {hasAfter && (
+                <div>
+                    <p
+                        className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider"
+                        style={{ color: "#0F766E" }}
+                    >
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#0F766E" }} />
+                        Foto Sesudah (Admin)
+                    </p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={imageAfter!}
+                        alt="Sesudah"
+                        className="aspect-video w-full rounded-xl object-cover sm:max-w-[50%]"
+                        style={{ border: "1px solid #E8E4D9" }}
+                    />
+                </div>
+            )}
         </div>
     )
 }

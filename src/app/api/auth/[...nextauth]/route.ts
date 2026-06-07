@@ -38,6 +38,7 @@ export const authOptions: AuthOptions = {
                         role: json.data.role,
                         points: json.data.points,
                         accessToken: json.token,
+                        avatar_url: json.data.avatar_url,
                     }
                 } catch {
                     return null
@@ -54,6 +55,7 @@ export const authOptions: AuthOptions = {
                 token.role = user.role
                 token.points = user.points
                 token.accessToken = user.accessToken
+                token.avatar_url = user.avatar_url
                 token.lastRefresh = Date.now()
             }
 
@@ -75,6 +77,7 @@ export const authOptions: AuthOptions = {
                     if (json.success && json.data) {
                         token.points = json.data.points
                         token.role = json.data.role
+                        token.avatar_url = json.data.avatar_url
                     }
                 } catch {
                     // Silent fail — keep old values
@@ -90,6 +93,7 @@ export const authOptions: AuthOptions = {
             session.user.role = token.role
             session.user.points = token.points
             session.user.accessToken = token.accessToken
+            session.user.avatar_url = token.avatar_url
             return session
         },
 

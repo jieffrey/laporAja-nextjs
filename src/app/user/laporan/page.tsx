@@ -237,7 +237,7 @@ export default function UserReportsPage() {
             ) : (
                 <div className="space-y-3">
                     {filtered.map((r) => (
-                        <ReportCard key={r.id} report={r} />
+                        <ReportCard key={r.id} report={r} showDelete />
                     ))}
                 </div>
             )}

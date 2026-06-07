@@ -12,13 +12,15 @@ import {
     RiArrowRightSLine,
 } from "react-icons/ri"
 import { userMenus } from "@/hooks/AdminMenus"
+import { useRealtimePoints } from "@/hooks/useRealtimePoints"
 
 type Props = {
     name: string
     points?: number
 }
 
-export default function UserSidebar({ name, points }: Props) {
+export default function UserSidebar({ name }: Props) {
+    const points = useRealtimePoints()
     const pathname = usePathname()
     const [collapsed, setCollapsed] = useState(false)
     const initials = name

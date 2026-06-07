@@ -1,8 +1,11 @@
+"use client"
+
 import Link from "next/link"
 import { MapPin, Clock, ArrowRight } from "lucide-react"
 import type { Report } from "@/lib/report.api"
 import StatusBadge from "@/components/common-ui/StatusBadge"
 import PriorityBadge from "@/components/common-ui/PriorityBadge"
+import DeleteReportButton from "@/components/admin/DeleteReportButton"
 
 const STATUS_COLOR: Record<string, string> = {
     "Resolved":    "#065F46",
@@ -18,10 +21,9 @@ const formatDate = (iso: string) =>
         year: "numeric",
     })
 
-export default function ReportCard({ report }: { report: Report }) {
+export default function ReportCard({ report, showDelete }: { report: Report; showDelete?: boolean }) {
     return (
-        <Link
-            href={`/user/laporan/${report.id}`}
+        <div
             className="group flex items-start gap-4 rounded-2xl p-4 transition-all hover:-translate-y-0.5"
             style={{
                 background: "#FCFBF8",
@@ -30,7 +32,8 @@ export default function ReportCard({ report }: { report: Report }) {
             }}
         >
             {/* Status accent strip */}
-            <div
+            <Link
+                href={`/user/laporan/${report.id}`}
                 className="mt-1 h-10 w-1 flex-shrink-0 rounded-full"
                 style={{
                     background: STATUS_COLOR[report.status] ?? "#D1D5DB",
@@ -39,27 +42,29 @@ export default function ReportCard({ report }: { report: Report }) {
 
             {/* Content */}
             <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                        <p
-                            className="truncate text-[14px] font-bold"
-                            style={{ color: "#111827" }}
-                        >
-                            {report.title}
-                        </p>
-                        <p
-                            className="mt-0.5 line-clamp-1 text-[12px]"
-                            style={{ color: "#9CA3AF" }}
-                        >
-                            {report.description}
-                        </p>
+                <Link href={`/user/laporan/${report.id}`}>
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <p
+                                className="truncate text-[14px] font-bold"
+                                style={{ color: "#111827" }}
+                            >
+                                {report.title}
+                            </p>
+                            <p
+                                className="mt-0.5 line-clamp-1 text-[12px]"
+                                style={{ color: "#9CA3AF" }}
+                            >
+                                {report.description}
+                            </p>
+                        </div>
+                        <ArrowRight
+                            size={14}
+                            className="mt-1 flex-shrink-0 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+                            style={{ color: "#0F766E" }}
+                        />
                     </div>
-                    <ArrowRight
-                        size={14}
-                        className="mt-1 flex-shrink-0 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
-                        style={{ color: "#0F766E" }}
-                    />
-                </div>
+                </Link>
 
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                     <StatusBadge status={report.status} />
@@ -79,8 +84,15 @@ export default function ReportCard({ report }: { report: Report }) {
                         <MapPin size={11} />
                         {report.category}
                     </span>
+                    {showDelete && (
+                        <DeleteReportButton
+                            reportId={report.id}
+                            variant="card"
+                            redirectTo="/user/laporan"
+                        />
+                    )}
                 </div>
             </div>
-        </Link>
+        </div>
     )
 }

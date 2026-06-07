@@ -1,9 +1,13 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { ClipboardList, Search } from "lucide-react"
 import { getReports } from "@/lib/report.api"
 import AdminReportsList from "@/components/admin/AdminReportsList"
 import EmptyState from "@/components/common-ui/Emptystate"
 
 export default async function AdminLaporanPage() {
+    const session = await getServerSession(authOptions)
+    const isAdmin = session?.user?.role === "admin"
     const reports = await getReports()
 
     return (
@@ -37,7 +41,7 @@ export default async function AdminLaporanPage() {
                     </div>
                 </div>
             </div>
-            <AdminReportsList reports={reports} />
+            <AdminReportsList reports={reports} isAdmin={isAdmin} />
         </div>
     )
 }

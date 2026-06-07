@@ -13,6 +13,7 @@ import {
 } from "react-icons/ri"
 import { userMenus, getPageTitle } from "@/hooks/AdminMenus"
 import NotificationPanel from "@/components/common-ui/NotificationPanel"
+import { useRealtimePoints } from "@/hooks/useRealtimePoints"
 
 export default function UserAppbar() {
     const { data: session } = useSession()
@@ -20,7 +21,7 @@ export default function UserAppbar() {
     const [drawerOpen, setDrawerOpen] = useState(false)
 
     const name = session?.user?.name ?? "Pengguna"
-    const points = session?.user?.points ?? 0
+    const points = useRealtimePoints()
     const title = getPageTitle(pathname)
     const initials = name
         .split(" ")
@@ -69,7 +70,7 @@ export default function UserAppbar() {
 
             {/* ── Top bar ── */}
             <header
-                className="sticky top-0 z-20 flex h-14 items-center justify-between px-4 lg:px-6"
+                className="sticky top-0 z-20 flex h-14 items-center justify-between px-4 py-7.5 lg:px-6"
                 style={{
                     background: "#FCFBF8",
                     borderBottom: "1px solid #E8E4D9",

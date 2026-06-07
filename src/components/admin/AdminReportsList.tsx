@@ -9,6 +9,7 @@ import { Search } from "lucide-react"
 
 type Props = {
   reports: Report[]
+  isAdmin: boolean
 }
 
 const filterReports = (
@@ -29,7 +30,7 @@ const filterReports = (
     )
   })
 
-export default function AdminReportsList({ reports }: Props) {
+export default function AdminReportsList({ reports, isAdmin }: Props) {
   const [statusFilter, setStatusFilter] = useState("Semua")
   const [priorityFilter, setPriorityFilter] = useState("Semua")
   const [categoryFilter, setCategoryFilter] = useState("Semua")
@@ -78,7 +79,7 @@ export default function AdminReportsList({ reports }: Props) {
             action={<button>Reset filter</button>}
           />
         ) : (
-          <ReportsTable reports={filtered} />
+          <ReportsTable reports={filtered} isAdmin={isAdmin} />
         )}
       </div>
     </div>

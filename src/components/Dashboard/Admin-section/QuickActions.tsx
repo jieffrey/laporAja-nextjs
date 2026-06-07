@@ -37,17 +37,15 @@ export default function QuickActions({
         },
     ]
 
-    if (isSuperAdmin) {
-        actions.push({
-            href: "/admin/users",
-            icon: <Users size={18} />,
-            iconBg: "#FEF3C7",
-            iconColor: "#92400E",
-            title: "Kelola Pengguna",
-            subtitle: `${totalUsers} pengguna terdaftar`,
-            arrowColor: "#EA580C",
-        })
-    }
+    actions.push({
+        href: "/admin/users",
+        icon: <Users size={18} />,
+        iconBg: "#FEF3C7",
+        iconColor: "#92400E",
+        title: "Kelola Pengguna",
+        subtitle: `${totalUsers} pengguna terdaftar`,
+        arrowColor: "#EA580C",
+    })
 
     return (
         <div className="grid gap-3 sm:grid-cols-2">

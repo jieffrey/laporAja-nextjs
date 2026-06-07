@@ -16,6 +16,8 @@ import type { Report } from "@/lib/report.api"
 import { POINTS_CONFIG, USER_ROLE_LABELS } from "@/lib/constant"
 import RoleBadge from "@/components/common-ui/RoleBadge"
 import StatusBadge from "@/components/common-ui/StatusBadge"
+import { useRealtimePoints } from "@/hooks/useRealtimePoints"
+import EditProfileModal from "@/components/common-ui/EditProfileModal"
 
 function getLevel(points: number) {
     if (points >= 500) return { label: "Warga Aktif", stars: 3, next: 1000 }
@@ -35,29 +37,12 @@ export default function ProfileView() {
     const { data: session, status } = useSession()
     const [reports, setReports] = useState<Report[]>([])
     const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        if (status !== "authenticated") return
-        const fetchReports = async () => {
-            try {
-                const data = await getReports()
-                setReports(
-                    data.filter((r) => r.user_id === Number(session?.user?.id))
-                )
-            } catch (e) {
-                console.warn(e)
-            }
-
-            setLoading(false)
-        }
-
-        if (status !== "authenticated") return
-        void fetchReports()
-    }, [status, session?.user?.id])
+    const [editOpen, setEditOpen] = useState(false)
 
     const name = session?.user?.name ?? "Pengguna"
     const email = session?.user?.email ?? ""
-    const points = session?.user?.points ?? 0
+    const avatarUrl = session?.user?.avatar_url
+    const points = useRealtimePoints()
     const role = (session?.user?.role ?? "user") as "user" | "admin" | "superadmin"
     const initials = name
         .split(" ")
@@ -67,12 +52,43 @@ export default function ProfileView() {
         .toUpperCase()
 
     const isUser = role === "user"
+
+    useEffect(() => {
+        if (status !== "authenticated") return
+        const fetchData = async () => {
+            try {
+                const data = isUser
+                    ? (await getReports()).filter(
+                          (r) => r.user_id === Number(session?.user?.id)
+                      )
+                    : await getReports()
+
+                setReports(data)
+            } catch (e) {
+                console.warn(e)
+            }
+
+            setLoading(false)
+        }
+
+        void fetchData()
+    }, [status, session?.user?.id, isUser])
+
     const level = getLevel(points)
     const pct = Math.min(Math.round((points / level.next) * 100), 100)
 
     const total = reports.length
     const resolved = reports.filter((r) => r.status === "Resolved").length
     const inProgress = reports.filter((r) => r.status === "In Progress").length
+
+    // System-wide stats for admin/superadmin
+    const totalUsers = useMemo(() => {
+        const ids = new Set(reports.map((r) => r.user_id))
+        return ids.size
+    }, [reports])
+
+    const pending = reports.filter((r) => r.status === "Pending").length
+    const rejected = reports.filter((r) => r.status === "Rejected").length
 
     const recent = useMemo(
         () =>
@@ -110,18 +126,23 @@ export default function ProfileView() {
                     {/* Avatar row */}
                     <div className="-mt-8 mb-4 flex items-end justify-between">
                         <div
-                            className="flex h-16 w-16 items-center justify-center rounded-2xl text-[20px] font-black text-white"
+                            className="flex h-16 w-16 items-center justify-center rounded-2xl text-[20px] font-black text-white overflow-hidden"
                             style={{
                                 background:
-                                    "linear-gradient(135deg, #115E59, #0F766E)",
+                                    avatarUrl ? "none" : "linear-gradient(135deg, #115E59, #0F766E)",
                                 border: "4px solid #FCFBF8",
                                 boxShadow: "0 4px 14px rgba(15,118,110,0.30)",
                             }}
                         >
-                            {initials}
+                            {avatarUrl ? (
+                                <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+                            ) : (
+                                initials
+                            )}
                         </div>
                         <button
-                            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-all hover:-translate-y-0.5"
+                            onClick={() => setEditOpen(true)}
+                            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 mt-10 text-[12px] font-semibold transition-all hover:-translate-y-0.5"
                             style={{
                                 background: "#F8F6F0",
                                 border: "1px solid #E8E4D9",
@@ -131,6 +152,10 @@ export default function ProfileView() {
                             <Edit3 size={12} />
                             Edit Profil
                         </button>
+                        <EditProfileModal
+                            open={editOpen}
+                            onClose={() => setEditOpen(false)}
+                        />
                     </div>
 
                     {/* Info row */}
@@ -277,84 +302,114 @@ export default function ProfileView() {
 
             {/* Points guide removed from profile; centralized in PointsGuide component */}
 
-            {/* ── Recent reports ── */}
-            <div
-                className="overflow-hidden rounded-xl"
-                style={{
-                    background: "#FCFBF8",
-                    border: "1px solid #E8E4D9",
-                }}
-            >
+            {/* ── Recent reports (user) / System overview (admin) ── */}
+            {isUser ? (
                 <div
-                    className="flex items-center justify-between px-5 py-3.5"
-                    style={{ borderBottom: "1px solid #F1EDE2" }}
+                    className="overflow-hidden rounded-xl"
+                    style={{
+                        background: "#FCFBF8",
+                        border: "1px solid #E8E4D9",
+                    }}
                 >
-                    <p
-                        className="text-[13px] font-bold"
-                        style={{ color: "#111827" }}
-                    >
-                        Laporan Terbaru
-                    </p>
-                    <span
-                        className="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
-                        style={{ background: "#F1EDE2", color: "#5F5E5A" }}
-                    >
-                        {reports.length}
-                    </span>
-                </div>
-
-                {loading ? (
-                    <div className="flex h-24 items-center justify-center">
-                        <div
-                            className="h-5 w-5 animate-spin rounded-full"
-                            style={{
-                                border: "2px solid #CCFBF1",
-                                borderTopColor: "#0F766E",
-                            }}
-                        />
-                    </div>
-                ) : recent.length === 0 ? (
                     <div
-                        className="py-8 text-center text-[13px]"
-                        style={{ color: "#9CA3AF" }}
+                        className="flex items-center justify-between px-5 py-3.5"
+                        style={{ borderBottom: "1px solid #F1EDE2" }}
                     >
-                        Belum ada laporan
+                        <p
+                            className="text-[13px] font-bold"
+                            style={{ color: "#111827" }}
+                        >
+                            Laporan Terbaru
+                        </p>
+                        <span
+                            className="rounded-full px-2.5 py-0.5 text-[11px] font-bold"
+                            style={{ background: "#F1EDE2", color: "#5F5E5A" }}
+                        >
+                            {reports.length}
+                        </span>
                     </div>
-                ) : (
-                    <div>
-                        {recent.map((r, idx) => (
+
+                    {loading ? (
+                        <div className="flex h-24 items-center justify-center">
                             <div
-                                key={r.id}
-                                className="flex items-center gap-3 px-5 py-3"
+                                className="h-5 w-5 animate-spin rounded-full"
                                 style={{
-                                    borderBottom:
-                                        idx < recent.length - 1
-                                            ? "1px solid #F1EDE2"
-                                            : undefined,
-                                    background:
-                                        idx % 2 !== 0 ? "#F8F6F0" : "#FCFBF8",
+                                    border: "2px solid #CCFBF1",
+                                    borderTopColor: "#0F766E",
                                 }}
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <p
-                                        className="truncate text-[13px] font-semibold"
-                                        style={{ color: "#111827" }}
-                                    >
-                                        {r.title}
-                                    </p>
-                                    <p
-                                        className="mt-0.5 text-[11px]"
-                                        style={{ color: "#9CA3AF" }}
-                                    >
-                                        {r.category} · {formatDate(r.created_at)}
-                                    </p>
+                            />
+                        </div>
+                    ) : recent.length === 0 ? (
+                        <div
+                            className="py-8 text-center text-[13px]"
+                            style={{ color: "#9CA3AF" }}
+                        >
+                            Belum ada laporan
+                        </div>
+                    ) : (
+                        <div>
+                            {recent.map((r, idx) => (
+                                <div
+                                    key={r.id}
+                                    className="flex items-center gap-3 px-5 py-3"
+                                    style={{
+                                        borderBottom:
+                                            idx < recent.length - 1
+                                                ? "1px solid #F1EDE2"
+                                                : undefined,
+                                        background:
+                                            idx % 2 !== 0 ? "#F8F6F0" : "#FCFBF8",
+                                    }}
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <p
+                                            className="truncate text-[13px] font-semibold"
+                                            style={{ color: "#111827" }}
+                                        >
+                                            {r.title}
+                                        </p>
+                                        <p
+                                            className="mt-0.5 text-[11px]"
+                                            style={{ color: "#9CA3AF" }}
+                                        >
+                                            {r.category} · {formatDate(r.created_at)}
+                                        </p>
+                                    </div>
+                                    <StatusBadge status={r.status} />
                                 </div>
-                                <StatusBadge status={r.status} />
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div
+                    className="grid gap-4 sm:grid-cols-2"
+                >
+                    {/* System stats */}
+                    {[
+                        { label: "Total Laporan", value: total, color: "#0F766E", bg: "#CCFBF1" },
+                        { label: "Pending", value: pending, color: "#F59E0B", bg: "#FEF3C7" },
+                        { label: "Selesai", value: resolved, color: "#065F46", bg: "#D1FAE5" },
+                        { label: "Pelapor Aktif", value: totalUsers, color: "#1E40AF", bg: "#DBEAFE" },
+                    ].map((s) => (
+                        <div
+                            key={s.label}
+                            className="rounded-xl px-5 py-4"
+                            style={{
+                                background: "#FCFBF8",
+                                border: "1px solid #E8E4D9",
+                            }}
+                        >
+                            <p className="text-[28px] font-black" style={{ color: s.color }}>
+                                {loading ? "-" : s.value}
+                            </p>
+                            <p className="mt-1 text-[12px]" style={{ color: "#6B7280" }}>
+                                {s.label}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

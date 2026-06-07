@@ -1,3 +1,5 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { getReportById } from "@/lib/report.api"
 import { getCommentsByReport } from "@/lib/comment.api"
 import ReportHeader from "@/components/admin/report-detail/ReportHeader"
@@ -7,6 +9,7 @@ import ReportLocation from "@/components/admin/report-detail/ReportLocation"
 // import ReportComments from "@/components/admin/report-detail/ReportComments"
 import CommentSection from "@/components/comment/CommentSection"
 import AdminStatusUpdater from "@/components/admin/AdminStatusUpdater"
+import DeleteReportButton from "@/components/admin/DeleteReportButton"
 
 type Props = {
     params: Promise<{ id: string }>
@@ -18,6 +21,8 @@ export default async function AdminLaporanDetailPage({ params }: Props) {
         getReportById(Number(id)),
         getCommentsByReport(Number(id)),
     ])
+    const session = await getServerSession(authOptions)
+    const isAdmin = session?.user?.role === "admin"
 
     return (
         <div className="w-full space-y-5">
@@ -45,7 +50,8 @@ export default async function AdminLaporanDetailPage({ params }: Props) {
 
                 {/* Right — action panel */}
                 <div className="space-y-4">
-                    <AdminStatusUpdater report={report} />
+                    {isAdmin && <AdminStatusUpdater report={report} />}
+                    {isAdmin && <DeleteReportButton reportId={report.id} />}
                 </div>
             </div>
         </div>

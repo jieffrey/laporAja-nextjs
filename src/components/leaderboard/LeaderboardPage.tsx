@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import {
     Trophy,
@@ -11,6 +11,7 @@ import {
     CheckCircle2,
     Flame,
     Search,
+    AlertTriangle,
 } from "lucide-react"
 import { getLeaderboard } from "@/lib/user.api"
 import type { User } from "@/lib/user.api"
@@ -34,24 +35,29 @@ export default function LeaderboardPage() {
     const { data: session, status } = useSession()
     const [users, setUsers] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [search, setSearch] = useState("")
 
-    useEffect(() => {
+    const fetchLeaderboard = useCallback(async () => {
         if (status !== "authenticated") return
 
-        const fetchLeaderboard = async () => {
-            try {
-                const data = await getLeaderboard()
-                setUsers(data)
-            } catch (e) {
-                console.warn(e)
-            }
-
-            setLoading(false)
+        try {
+            setError(null)
+            setLoading(true)
+            const data = await getLeaderboard()
+            setUsers(data)
+        } catch (e: any) {
+            const msg = e?.response?.data?.message ?? e?.message ?? "Gagal memuat leaderboard"
+            setError(msg)
+            setUsers([])
         }
 
-        void fetchLeaderboard()
+        setLoading(false)
     }, [status])
+
+    useEffect(() => {
+        void fetchLeaderboard()
+    }, [fetchLeaderboard])
 
     const sorted = useMemo(
         () =>
@@ -83,6 +89,35 @@ export default function LeaderboardPage() {
                     className="h-8 w-8 animate-spin rounded-full"
                     style={{ border: "3px solid #CCFBF1", borderTopColor: "#0F766E" }}
                 />
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="w-full space-y-5">
+                <div
+                    className="flex flex-col items-center gap-3 rounded-2xl px-5 py-12 text-center"
+                    style={{
+                        background: "#FCFBF8",
+                        border: "1px solid #FECACA",
+                    }}
+                >
+                    <div
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                        style={{ background: "#FEE2E2", color: "#991B1B" }}
+                    >
+                        <AlertTriangle size={24} />
+                    </div>
+                    <p className="text-[14px] font-semibold" style={{ color: "#991B1B" }}>{error}</p>
+                    <button
+                        onClick={() => void fetchLeaderboard()}
+                        className="rounded-xl px-4 py-2 text-[13px] font-bold text-white transition-all"
+                        style={{ background: "linear-gradient(135deg, #0F766E, #14B8A6)" }}
+                    >
+                        Coba Lagi
+                    </button>
+                </div>
             </div>
         )
     }

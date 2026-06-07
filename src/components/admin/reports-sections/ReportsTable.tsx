@@ -1,14 +1,16 @@
+"use client"
+
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import type { Report } from "@/lib/report.api"
 import StatusBadge from "@/components/common-ui/StatusBadge"
 import PriorityBadge from "@/components/common-ui/PriorityBadge"
+import DeleteReportButton from "@/components/admin/DeleteReportButton"
 
 type Props = {
     reports: Report[]
+    isAdmin: boolean
 }
-
-const HEADERS = ["Laporan", "Kategori", "Priority", "Status", "Pelapor", "Tanggal", ""]
 
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString("id-ID", {
@@ -17,7 +19,10 @@ const formatDate = (iso: string) =>
         year: "numeric",
     })
 
-export default function ReportsTable({ reports }: Props) {
+export default function ReportsTable({ reports, isAdmin }: Props) {
+    const headers = ["Laporan", "Kategori", "Priority", "Status", "Pelapor", "Tanggal"]
+    if (isAdmin) headers.push("", "")
+
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
@@ -30,7 +35,7 @@ export default function ReportsTable({ reports }: Props) {
                             borderBottom: "1px solid #E8E4D9",
                         }}
                     >
-                        {HEADERS.map((h, i) => (
+                        {headers.map((h, i) => (
                             <th
                                 key={i}
                                 className={i === 0 ? "px-5 py-3" : "px-4 py-3"}
@@ -47,6 +52,7 @@ export default function ReportsTable({ reports }: Props) {
                             report={r}
                             isLast={idx === reports.length - 1}
                             isAlt={idx % 2 !== 0}
+                            isAdmin={isAdmin}
                         />
                     ))}
                 </tbody>
@@ -59,10 +65,12 @@ function ReportRow({
     report: r,
     isLast,
     isAlt,
+    isAdmin,
 }: {
     report: Report
     isLast: boolean
     isAlt: boolean
+    isAdmin: boolean
 }) {
     return (
         <tr
@@ -127,19 +135,30 @@ function ReportRow({
                 {formatDate(r.created_at)}
             </td>
 
-            <td className="px-4 py-3.5">
-                <Link
-                    href={`/admin/laporan/${r.id}`}
-                    className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-semibold opacity-0 transition-all group-hover:opacity-100"
-                    style={{
-                        background: "linear-gradient(135deg, #0F766E, #14B8A6)",
-                        color: "#fff",
-                        boxShadow: "0 2px 8px rgba(15,118,110,0.30)",
-                    }}
-                >
-                    Review <ArrowRight size={12} />
-                </Link>
-            </td>
+            {isAdmin && (
+                <>
+                    <td className="px-4 py-3.5">
+                        <Link
+                            href={`/admin/laporan/${r.id}`}
+                            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[12px] font-semibold opacity-0 transition-all group-hover:opacity-100"
+                            style={{
+                                background: "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                color: "#fff",
+                                boxShadow: "0 2px 8px rgba(15,118,110,0.30)",
+                            }}
+                        >
+                            Review <ArrowRight size={12} />
+                        </Link>
+                    </td>
+                    <td className="px-4 py-3.5">
+                        <DeleteReportButton
+                            reportId={r.id}
+                            variant="card"
+                            redirectTo="/admin/laporan"
+                        />
+                    </td>
+                </>
+            )}
         </tr>
     )
 }

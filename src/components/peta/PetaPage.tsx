@@ -163,7 +163,7 @@ export default function PetaPage() {
     if (loading) {
         return (
             <div
-                className="flex h-[calc(100vh-56px)] items-center justify-center"
+                className="flex h-[calc(100vh-96px)] items-center justify-center"
                 style={{ background: "#F8F6F0" }}
             >
                 <div
@@ -181,9 +181,10 @@ export default function PetaPage() {
         <div
             className="relative overflow-hidden"
             style={{
-                height: "calc(100vh - 56px)",
+                height: "calc(100vh - 96px)",
                 borderRadius: "16px",
                 border: "1px solid #E8E4D9",
+                marginTop: 0,
             }}
         >
             {/* Filters overlay */}

@@ -8,6 +8,7 @@ declare module "next-auth" {
     role: string
     points: number
     accessToken: string
+    avatar_url?: string
   }
 
   interface Session {
@@ -18,6 +19,7 @@ declare module "next-auth" {
       role: string
       points: number
       accessToken: string
+      avatar_url?: string
     }
   }
 }
@@ -28,5 +30,6 @@ declare module "next-auth/jwt" {
     role: string
     points: number
     accessToken: string
+    avatar_url?: string
   }
 }

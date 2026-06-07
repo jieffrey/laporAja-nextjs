@@ -74,7 +74,7 @@ export default function AdminAppbar() {
 
             {/* ── Top bar ── */}
             <header
-                className="sticky top-0 z-20 flex h-14 items-center justify-between px-4 lg:px-6"
+                className="sticky top-0 z-20 flex h-14 items-center justify-between px-4 py-7.5 lg:px-6"
                 style={{
                     background: "#FCFBF8",
                     borderBottom: "1px solid #E8E4D9",

@@ -5,7 +5,6 @@ export const REPORT_CATEGORIES = [
   "Lingkungan",
   "Kebersihan",
   "Keamanan",
-  "Taman Kota",
   "Fasilitas Umum",
   "Lainnya",
 ] as const
@@ -51,8 +50,8 @@ export const REPORT_PRIORITY = {
 // ─── Points ───────────────────────────────────────────────────────────────────
 
 export const POINTS_CONFIG = {
-  CREATE_REPORT: 5,
-  IN_PROGRESS:   10,
+  CREATE_REPORT: 10,
+  IN_PROGRESS:   5,
   RESOLVED:      25,
 } as const
 

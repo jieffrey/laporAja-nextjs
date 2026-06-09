@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { X, Save, User, Camera } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { updateUserProfile } from "@/lib/user.api"
+import { useRouter } from "next/navigation"
 
 type Props = {
     open: boolean
@@ -24,6 +25,7 @@ export default function EditProfileModal({ open, onClose }: Props) {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+    const router = useRouter()
 
     useEffect(() => {
         if (open) {
@@ -65,16 +67,20 @@ export default function EditProfileModal({ open, onClose }: Props) {
         setLoading(true)
         setError(null)
         try {
-            await updateUserProfile(Number(session.user.id), {
+            console.log("calling updateUserProfile with:", { name, email, password })
+            const result = await updateUserProfile(Number(session.user.id), {
                 name: name.trim() || undefined,
                 email: email.trim() || undefined,
                 password: password || undefined,
                 avatar: avatarFile || undefined,
             })
+            console.log("result:", result)
             setSuccess(true)
-            await update()
+            await update({ name: name.trim(), email: email.trim(), avatar_url: result.avatar_url })
+            router.refresh()
             setTimeout(() => onClose(), 1200)
         } catch (e: any) {
+            console.log("error:", e)
             setError(e?.response?.data?.message ?? "Gagal update profil")
         }
         setLoading(false)

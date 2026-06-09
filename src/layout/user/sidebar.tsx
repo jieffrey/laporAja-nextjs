@@ -16,13 +16,13 @@ import { useRealtimePoints } from "@/hooks/useRealtimePoints"
 
 type Props = {
     name: string
-    points?: number
 }
 
 export default function UserSidebar({ name }: Props) {
     const points = useRealtimePoints()
     const pathname = usePathname()
     const [collapsed, setCollapsed] = useState(false)
+
     const initials = name
         .split(" ")
         .map((n) => n[0])
@@ -49,40 +49,52 @@ export default function UserSidebar({ name }: Props) {
                 .sidebar {
                     transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                .nav-item {
-                    color: #6B7280;
-                    transition: all 0.18s ease;
+                .nav-link {
+                    color: #6b7280;
+                    transition: background 0.18s ease, color 0.18s ease;
                 }
-                .nav-item:hover {
-                    background: #F1EDE2;
-                    color: #374151;
+                .nav-link:hover {
+                    background: #14b8a6;
+                    color: #ffffff;
                 }
-                .nav-active {
-                    background: #CCFBF1;
-                    color: #0F766E;
+                .nav-link:hover .nav-icon {
+                    color: #ffffff;
                 }
-                .nav-active:hover {
-                    background: #CCFBF1;
-                    color: #0F766E;
+                .nav-link:hover .nav-dot {
+                    background: #ffffff;
+                }
+                .nav-link.active {
+                    background: #ccfbf1;
+                    color: #0f766e;
+                }
+                .nav-link.active .nav-icon {
+                    color: #0f766e;
+                }
+                .nav-link.active:hover {
+                    background: #14b8a6;
+                    color: #ffffff;
                 }
                 .logout-btn {
-                    color: #9CA3AF;
-                    transition: all 0.18s ease;
+                    color: #9ca3af;
+                    transition: background 0.18s ease, color 0.18s ease;
                 }
                 .logout-btn:hover {
-                    background: #FEE2E2;
-                    color: #991B1B;
+                    background: #fee2e2;
+                    color: #991b1b;
+                }
+                .logout-btn:hover .logout-icon {
+                    color: #991b1b;
                 }
                 .toggle-btn {
-                    color: #9CA3AF;
-                    background: #F8F6F0;
-                    border: 1px solid #E8E4D9;
+                    color: #9ca3af;
+                    background: #f8f6f0;
+                    border: 1px solid #e8e4d9;
                     transition: all 0.18s ease;
                 }
                 .toggle-btn:hover {
-                    background: #CCFBF1;
-                    color: #0F766E;
-                    border-color: #5EEAD4;
+                    background: #ccfbf1;
+                    color: #0f766e;
+                    border-color: #5eead4;
                 }
             `}</style>
 
@@ -107,8 +119,7 @@ export default function UserSidebar({ name }: Props) {
                         <div
                             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
                             style={{
-                                background:
-                                    "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                background: "linear-gradient(135deg, #0F766E, #14B8A6)",
                                 boxShadow: "0 4px 12px rgba(15,118,110,0.25)",
                             }}
                         >
@@ -135,9 +146,7 @@ export default function UserSidebar({ name }: Props) {
                     <button
                         onClick={() => setCollapsed((v) => !v)}
                         className="toggle-btn flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md"
-                        aria-label={
-                            collapsed ? "Expand sidebar" : "Collapse sidebar"
-                        }
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                     >
                         {collapsed ? (
                             <RiArrowRightSLine size={14} />
@@ -163,28 +172,29 @@ export default function UserSidebar({ name }: Props) {
                             <Link
                                 key={href}
                                 href={href}
-                                className={`flex items-center rounded-xl ${
-                                    active ? "nav-active" : "nav-item"
-                                }`}
+                                className={`nav-link flex items-center rounded-xl${active ? " active" : ""}`}
                                 style={{
                                     gap: collapsed ? 0 : 10,
-                                    padding: collapsed
-                                        ? "10px 0"
-                                        : "9px 10px",
-                                    justifyContent: collapsed
-                                        ? "center"
-                                        : "flex-start",
+                                    padding: collapsed ? "10px 0" : "9px 10px",
+                                    justifyContent: collapsed ? "center" : "flex-start",
                                 }}
                                 title={collapsed ? label : undefined}
                             >
                                 <Icon
                                     size={collapsed ? 18 : 16}
-                                    className="flex-shrink-0"
+                                    className="nav-icon flex-shrink-0"
+                                    style={{ color: active ? "#0F766E" : "#6B7280" }}
                                 />
                                 {!collapsed && (
                                     <span className="text-[13px] font-semibold">
                                         {label}
                                     </span>
+                                )}
+                                {active && !collapsed && (
+                                    <span
+                                        className="nav-dot ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                                        style={{ background: "#14B8A6" }}
+                                    />
                                 )}
                             </Link>
                         )
@@ -202,17 +212,12 @@ export default function UserSidebar({ name }: Props) {
                             className="mb-2 flex items-center rounded-lg px-3 py-1.5"
                             style={{
                                 gap: collapsed ? 0 : 6,
-                                justifyContent: collapsed
-                                    ? "center"
-                                    : "flex-start",
+                                justifyContent: collapsed ? "center" : "flex-start",
                                 background: "#FEF3C7",
                                 border: "1px solid #FCD34D",
                             }}
                         >
-                            <RiStarFill
-                                size={12}
-                                style={{ color: "#F59E0B" }}
-                            />
+                            <RiStarFill size={12} style={{ color: "#F59E0B" }} />
                             {!collapsed && (
                                 <span
                                     className="text-[11px] font-bold"
@@ -230,9 +235,7 @@ export default function UserSidebar({ name }: Props) {
                         style={{
                             gap: collapsed ? 0 : 8,
                             padding: collapsed ? "8px 0" : "6px 8px",
-                            justifyContent: collapsed
-                                ? "center"
-                                : "flex-start",
+                            justifyContent: collapsed ? "center" : "flex-start",
                         }}
                     >
                         <div
@@ -240,8 +243,7 @@ export default function UserSidebar({ name }: Props) {
                             style={{
                                 width: collapsed ? 28 : 26,
                                 height: collapsed ? 28 : 26,
-                                background:
-                                    "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                background: "linear-gradient(135deg, #0F766E, #14B8A6)",
                             }}
                             title={collapsed ? name : undefined}
                         >
@@ -264,13 +266,15 @@ export default function UserSidebar({ name }: Props) {
                         style={{
                             gap: collapsed ? 0 : 8,
                             padding: collapsed ? "8px 0" : "7px 8px",
-                            justifyContent: collapsed
-                                ? "center"
-                                : "flex-start",
+                            justifyContent: collapsed ? "center" : "flex-start",
                         }}
                         title={collapsed ? "Keluar" : undefined}
                     >
-                        <RiLogoutBoxRLine size={collapsed ? 16 : 14} />
+                        <RiLogoutBoxRLine
+                            size={collapsed ? 16 : 14}
+                            className="logout-icon"
+                            style={{ color: "inherit" }}
+                        />
                         {!collapsed && <span>Keluar</span>}
                     </button>
                 </div>

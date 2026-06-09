@@ -20,15 +20,50 @@ type Props = {
     name: string
 }
 
-const ACCENT: Record<UserRole, { dot: string; avatar: string; label: string }> = {
-    user:       { dot: "#14B8A6", avatar: "linear-gradient(135deg, #14B8A6, #5EEAD4)", label: "#0F766E" },
-    admin:      { dot: "#14B8A6", avatar: "linear-gradient(135deg, #0F766E, #14B8A6)", label: "#0F766E" },
-    superadmin: { dot: "#F59E0B", avatar: "linear-gradient(135deg, #F59E0B, #EA580C)", label: "#EA580C" },
+const ACCENT: Record<UserRole, {
+    dot: string
+    avatar: string
+    label: string
+    hoverBg: string      // background saat hover
+    hoverText: string    // text/icon color saat hover
+    activeBg: string     // background active state
+    activeText: string   // text/icon color active state
+}> = {
+    user: {
+        dot: "#14B8A6",
+        avatar: "linear-gradient(135deg, #14B8A6, #5EEAD4)",
+        label: "#0F766E",
+        hoverBg: "#14B8A6",
+        hoverText: "#ffffff",
+        activeBg: "#CCFBF1",
+        activeText: "#0F766E",
+    },
+    admin: {
+        dot: "#14B8A6",
+        avatar: "linear-gradient(135deg, #0F766E, #14B8A6)",
+        label: "#0F766E",
+        hoverBg: "#14B8A6",
+        hoverText: "#ffffff",
+        activeBg: "#CCFBF1",
+        activeText: "#0F766E",
+    },
+    superadmin: {
+        dot: "#F59E0B",
+        avatar: "linear-gradient(135deg, #F59E0B, #EA580C)",
+        label: "#EA580C",
+        hoverBg: "#F59E0B",
+        hoverText: "#ffffff",
+        activeBg: "#FEF3C7",
+        activeText: "#B45309",
+    },
 }
 
 export default function AdminSidebar({ role, name }: Props) {
     const pathname = usePathname()
     const [collapsed, setCollapsed] = useState(false)
+    const [hoveredHref, setHoveredHref] = useState<string | null>(null)
+    const [logoutHovered, setLogoutHovered] = useState(false)
+
     const ac = ACCENT[role]
     const initials = name
         .split(" ")
@@ -52,36 +87,6 @@ export default function AdminSidebar({ role, name }: Props) {
             <style jsx>{`
                 .sidebar {
                     transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .nav-item {
-                    color: #6B7280;
-                    transition: all 0.18s ease;
-                }
-                .nav-item:hover {
-                    background: #14B8A6;
-                    color: #ffffff;
-                }
-                .nav-item:hover svg {
-                    color: #ffffff;
-                }
-                .nav-active {
-                    background: #CCFBF1;
-                    color: #0F766E;
-                }
-                .nav-active:hover {
-                    background: #14B8A6;
-                    color: #ffffff;
-                }
-                .nav-active:hover svg {
-                    color: #ffffff;
-                }
-                .logout-btn {
-                    color: #9CA3AF;
-                    transition: all 0.18s ease;
-                }
-                .logout-btn:hover {
-                    background: #FEE2E2;
-                    color: #991B1B;
                 }
                 .toggle-btn {
                     color: #9CA3AF;
@@ -123,10 +128,8 @@ export default function AdminSidebar({ role, name }: Props) {
                             <div
                                 className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl"
                                 style={{
-                                    background:
-                                        "linear-gradient(135deg, #0F766E, #14B8A6)",
-                                    boxShadow:
-                                        "0 4px 12px rgba(15,118,110,0.25)",
+                                    background: "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                    boxShadow: "0 4px 12px rgba(15,118,110,0.25)",
                                 }}
                             >
                                 <RiMapPin2Fill size={14} className="text-white" />
@@ -157,9 +160,7 @@ export default function AdminSidebar({ role, name }: Props) {
                 </div>
 
                 {/* Nav */}
-                <nav
-                    className="flex-1 space-y-1 overflow-y-auto px-2 py-3"
-                >
+                <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
                     {!collapsed && (
                         <p
                             className="mb-2 px-2.5 text-[10px] font-bold uppercase tracking-widest"
@@ -170,37 +171,52 @@ export default function AdminSidebar({ role, name }: Props) {
                     )}
                     {visibleMenus.map(({ href, label, Icon }) => {
                         const active = isActive(href)
+                        const hovered = hoveredHref === href
+
+                        // Tentukan warna berdasarkan state
+                        const bgColor = hovered
+                            ? ac.hoverBg
+                            : active
+                                ? ac.activeBg
+                                : "transparent"
+                        const textColor = hovered
+                            ? ac.hoverText
+                            : active
+                                ? ac.activeText
+                                : "#6B7280"
+
                         return (
                             <Link
                                 key={href}
                                 href={href}
-                                className={`flex items-center rounded-xl ${
-                                    active ? "nav-active" : "nav-item"
-                                }`}
+                                className="flex items-center rounded-xl"
                                 style={{
                                     minHeight: 44,
                                     gap: collapsed ? 0 : 10,
                                     padding: collapsed ? "12px 0" : "9px 10px",
-                                    justifyContent: collapsed
-                                        ? "center"
-                                        : "flex-start",
+                                    justifyContent: collapsed ? "center" : "flex-start",
+                                    background: bgColor,
+                                    color: textColor,
+                                    transition: "background 0.18s ease, color 0.18s ease",
                                 }}
                                 title={collapsed ? label : undefined}
+                                onMouseEnter={() => setHoveredHref(href)}
+                                onMouseLeave={() => setHoveredHref(null)}
                             >
                                 <Icon
                                     size={collapsed ? 18 : 16}
                                     className="flex-shrink-0"
+                                    style={{ color: textColor }}
                                 />
                                 {!collapsed && (
                                     <span className="fade-label text-[13px] font-semibold">
                                         {label}
                                     </span>
                                 )}
-                                {/* Active indicator dot */}
                                 {active && !collapsed && (
                                     <span
                                         className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                                        style={{ background: ac.dot }}
+                                        style={{ background: hovered ? ac.hoverText : ac.dot }}
                                     />
                                 )}
                             </Link>
@@ -264,15 +280,23 @@ export default function AdminSidebar({ role, name }: Props) {
                     {/* Logout */}
                     <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="logout-btn mt-1 flex w-full items-center rounded-xl text-[12px] font-semibold"
+                        className="mt-1 flex w-full items-center rounded-xl text-[12px] font-semibold"
                         style={{
                             gap: collapsed ? 0 : 8,
                             padding: collapsed ? "8px 0" : "7px 8px",
                             justifyContent: collapsed ? "center" : "flex-start",
+                            color: logoutHovered ? "#991B1B" : "#9CA3AF",
+                            background: logoutHovered ? "#FEE2E2" : "transparent",
+                            transition: "background 0.18s ease, color 0.18s ease",
                         }}
                         title={collapsed ? "Keluar" : undefined}
+                        onMouseEnter={() => setLogoutHovered(true)}
+                        onMouseLeave={() => setLogoutHovered(false)}
                     >
-                        <RiLogoutBoxRLine size={collapsed ? 16 : 14} />
+                        <RiLogoutBoxRLine
+                            size={collapsed ? 16 : 14}
+                            style={{ color: logoutHovered ? "#991B1B" : "#9CA3AF" }}
+                        />
                         {!collapsed && <span>Keluar</span>}
                     </button>
                 </div>

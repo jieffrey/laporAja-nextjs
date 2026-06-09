@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertCircle, Sparkles, Loader2, Check } from "lucide-react"
+import { AlertCircle, Sparkles, Loader2, CheckCircle2 } from "lucide-react"
 import {
     createReportSchema,
     type CreateReportInput,
@@ -58,14 +58,13 @@ export default function ReportForm() {
     // AI suggestion state
     const [aiLoading, setAiLoading] = useState(false)
     const [aiSuggestion, setAiSuggestion] = useState<AISuggestion>(null)
-    const [aiApplied, setAiApplied] = useState(false)
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const {
         register,
         handleSubmit,
         setValue,
         watch,
-        getValues,
         formState: { errors, isSubmitting },
     } = useForm<CreateReportInput>({
         resolver: zodResolver(createReportSchema),
@@ -81,43 +80,45 @@ export default function ReportForm() {
     const title = watch("title")
     const description = watch("description")
 
-    // AI auto-categorize
-    const handleAISuggest = async () => {
-        const t = getValues("title")
-        const d = getValues("description")
+    // Auto-categorize: debounce 800ms setelah title/description berubah
+    useEffect(() => {
+        const titleLen = title?.length ?? 0
+        const descLen = description?.length ?? 0
+        const canSuggest = titleLen > 5 || descLen > 10
 
-        if (!t && !d) return
+        if (!canSuggest) return
 
-        setAiLoading(true)
-        setAiSuggestion(null)
-        setAiApplied(false)
+        // Clear debounce sebelumnya
+        if (debounceRef.current) clearTimeout(debounceRef.current)
 
-        try {
-            const res = await fetch("/api/ai/categorize", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: t, description: d }),
-            })
-            const json = await res.json()
+        debounceRef.current = setTimeout(async () => {
+            setAiLoading(true)
+            try {
+                const res = await fetch("/api/ai/categorize", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ title, description }),
+                })
+                const json = await res.json()
 
-            if (json.success && json.data) {
-                setAiSuggestion(json.data)
+                if (json.success && json.data) {
+                    const suggestion = json.data as AISuggestion
+                    setAiSuggestion(suggestion)
+                    // Langsung apply ke form
+                    setValue("category", suggestion!.category, { shouldValidate: true })
+                    setValue("priority", suggestion!.priority, { shouldValidate: true })
+                }
+            } catch (e) {
+                console.error("AI suggestion failed:", e)
+            } finally {
+                setAiLoading(false)
             }
-        } catch (e) {
-            console.error("AI suggestion failed:", e)
-        } finally {
-            setAiLoading(false)
+        }, 800)
+
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current)
         }
-    }
-
-    const applyAISuggestion = () => {
-        if (!aiSuggestion) return
-        setValue("category", aiSuggestion.category, { shouldValidate: true })
-        setValue("priority", aiSuggestion.priority, { shouldValidate: true })
-        setAiApplied(true)
-    }
-
-    const canSuggest = (title?.length ?? 0) > 5 || (description?.length ?? 0) > 10
+    }, [title, description, setValue])
 
     const onSubmit = async (data: CreateReportInput) => {
         if (images.length === 0) {
@@ -145,9 +146,7 @@ export default function ReportForm() {
             router.refresh()
         } catch (err) {
             setSubmitError(
-                err instanceof Error
-                    ? err.message
-                    : "Gagal mengirim laporan"
+                err instanceof Error ? err.message : "Gagal mengirim laporan"
             )
         }
     }
@@ -202,79 +201,63 @@ export default function ReportForm() {
             <div
                 className="rounded-xl p-4"
                 style={{
-                    background:
-                        aiSuggestion
-                            ? "linear-gradient(135deg, rgba(20,184,166,0.08), rgba(245,158,11,0.06))"
-                            : "#F8F6F0",
+                    background: aiSuggestion
+                        ? "linear-gradient(135deg, rgba(20,184,166,0.08), rgba(245,158,11,0.06))"
+                        : "#F8F6F0",
                     border: aiSuggestion
                         ? "1px solid #5EEAD4"
                         : "1px solid #E8E4D9",
+                    transition: "all 0.3s ease",
                 }}
             >
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                         <div
                             className="flex h-7 w-7 items-center justify-center rounded-lg"
                             style={{
-                                background:
-                                    "linear-gradient(135deg, #0F766E, #14B8A6)",
+                                background: "linear-gradient(135deg, #0F766E, #14B8A6)",
                                 color: "#fff",
                             }}
                         >
                             <Sparkles size={13} />
                         </div>
                         <div>
-                            <p
-                                className="text-[13px] font-bold"
-                                style={{ color: "#111827" }}
-                            >
+                            <p className="text-[13px] font-bold" style={{ color: "#111827" }}>
                                 AI Auto-Kategorisasi
                             </p>
-                            <p
-                                className="text-[11px]"
-                                style={{ color: "#9CA3AF" }}
-                            >
-                                Deteksi otomatis dari judul &amp; deskripsi
+                            <p className="text-[11px]" style={{ color: "#9CA3AF" }}>
+                                {aiLoading
+                                    ? "Menganalisis judul & deskripsi..."
+                                    : aiSuggestion
+                                        ? "Kategori & prioritas otomatis diterapkan"
+                                        : "Isi judul atau deskripsi untuk memulai"}
                             </p>
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleAISuggest}
-                        disabled={aiLoading || !canSuggest}
-                        className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-bold text-white transition-all disabled:opacity-50"
-                        style={{
-                            background:
-                                "linear-gradient(135deg, #0F766E, #14B8A6)",
-                            boxShadow: canSuggest
-                                ? "0 2px 8px rgba(15,118,110,0.25)"
-                                : "none",
-                        }}
-                    >
-                        {aiLoading ? (
-                            <>
-                                <Loader2 size={12} className="animate-spin" />
-                                Menganalisis...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles size={12} />
-                                Deteksi
-                            </>
-                        )}
-                    </button>
+                    {/* Loading spinner atau checkmark */}
+                    {aiLoading && (
+                        <Loader2
+                            size={16}
+                            className="animate-spin flex-shrink-0"
+                            style={{ color: "#14B8A6" }}
+                        />
+                    )}
+                    {!aiLoading && aiSuggestion && (
+                        <CheckCircle2
+                            size={16}
+                            className="flex-shrink-0"
+                            style={{ color: "#0F766E" }}
+                        />
+                    )}
                 </div>
 
-                {/* AI Result */}
-                {aiSuggestion && (
+                {/* AI Result badges */}
+                {aiSuggestion && !aiLoading && (
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span
                             className="rounded-full px-2.5 py-1 text-[11px] font-bold"
-                            style={{
-                                background: "#CCFBF1",
-                                color: "#0F766E",
-                            }}
+                            style={{ background: "#CCFBF1", color: "#0F766E" }}
                         >
                             {aiSuggestion.category}
                         </span>
@@ -297,38 +280,9 @@ export default function ReportForm() {
                         >
                             {aiSuggestion.priority}
                         </span>
-                        <span
-                            className="text-[10px]"
-                            style={{ color: "#9CA3AF" }}
-                        >
-                            {Math.round(aiSuggestion.confidence * 100)}%
-                            confidence
+                        <span className="text-[10px]" style={{ color: "#9CA3AF" }}>
+                            {Math.round(aiSuggestion.confidence * 100)}% confidence
                         </span>
-
-                        {!aiApplied ? (
-                            <button
-                                type="button"
-                                onClick={applyAISuggestion}
-                                className="ml-auto flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-bold text-white"
-                                style={{
-                                    background:
-                                        "linear-gradient(135deg, #F59E0B, #EA580C)",
-                                    boxShadow:
-                                        "0 2px 8px rgba(245,158,11,0.25)",
-                                }}
-                            >
-                                <Check size={11} />
-                                Terapkan
-                            </button>
-                        ) : (
-                            <span
-                                className="ml-auto flex items-center gap-1 text-[11px] font-bold"
-                                style={{ color: "#065F46" }}
-                            >
-                                <Check size={11} />
-                                Diterapkan
-                            </span>
-                        )}
                     </div>
                 )}
             </div>
@@ -410,16 +364,10 @@ export default function ReportForm() {
             {submitError && (
                 <div
                     className="flex items-center gap-2.5 rounded-xl px-4 py-3"
-                    style={{
-                        background: "#FEE2E2",
-                        border: "1px solid #FECACA",
-                    }}
+                    style={{ background: "#FEE2E2", border: "1px solid #FECACA" }}
                 >
                     <AlertCircle size={16} style={{ color: "#991B1B" }} />
-                    <p
-                        className="text-[13px] font-medium"
-                        style={{ color: "#991B1B" }}
-                    >
+                    <p className="text-[13px] font-medium" style={{ color: "#991B1B" }}>
                         {submitError}
                     </p>
                 </div>
@@ -431,9 +379,7 @@ export default function ReportForm() {
                     type="submit"
                     variant="primary"
                     size="md"
-                    className={
-                        isSubmitting ? "pointer-events-none opacity-70" : ""
-                    }
+                    className={isSubmitting ? "pointer-events-none opacity-70" : ""}
                 >
                     {isSubmitting ? "Mengirim..." : "Kirim Laporan"}
                 </Button>
